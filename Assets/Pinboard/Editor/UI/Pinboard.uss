@@ -1,0 +1,17 @@
+﻿#toolbar {
+    flex-direction: row;
+    width: auto;
+    height: 36px;
+    display: flex;
+}
+
+#root {
+    flex-grow: 1;
+    flex-direction: column;
+    background-color: #1f1b2f;
+}
+
+Toolbar {
+    
+    
+}

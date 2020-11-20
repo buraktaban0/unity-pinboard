@@ -5,9 +5,14 @@ namespace Pinboard
 {
 	public static class Utility
 	{
-		public static string GetGitUserName()
+		public static string GetUserName()
 		{
 			var name = System.Environment.MachineName;
+
+			if (string.IsNullOrEmpty(name))
+			{
+				name = "Unknown User";
+			}
 
 			try
 			{
@@ -39,9 +44,9 @@ namespace Pinboard
 			return name;
 		}
 
-		public static string GetUnixTimestamp()
+		public static long GetUnixTimestamp()
 		{
-			return DateTimeOffset.UtcNow.ToUniversalTime().ToUnixTimeSeconds().ToString();
+			return DateTimeOffset.UtcNow.ToUniversalTime().ToUnixTimeSeconds();
 		}
 
 		public static DateTime FromUnixToLocal(string seconds)
@@ -58,5 +63,8 @@ namespace Pinboard
 		{
 			return DateTimeOffset.FromUnixTimeSeconds(seconds).LocalDateTime;
 		}
+		
+		
+		
 	}
 }
