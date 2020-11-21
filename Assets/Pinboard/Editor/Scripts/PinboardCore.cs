@@ -18,6 +18,9 @@ namespace Pinboard
 		public const string PATH_PINBOARD_UXML = DIR_UI + "Pinboard.uxml";
 		public const string PATH_PINBOARD_USS = DIR_UI + "Pinboard.uss";
 
+		public const string CLASS_LIST_ITEM_ROOT = "list-item-root";
+		public const string CLASS_BOARD_TOOLBAR = "board-toolbar";
+
 		private static string user = null;
 
 		public static string User
@@ -55,9 +58,16 @@ namespace Pinboard
 		public Board currentBoard;
 
 		private VisualElement root;
+
 		private ToolbarMenu boardsDropdown;
 		private ToolbarSearchField searchField;
+
+		private Toolbar boardToolbar;
+		private Label boardNameLabel;
+
 		private ListView itemsList;
+
+		private List<BoardItem> visibleItems;
 
 
 		private void OnEnable()
@@ -72,42 +82,44 @@ namespace Pinboard
 
 			root = root.Q<VisualElement>("root");
 
-			AddToolbar();
+			AddMainToolbar();
 
-			itemsList = new ListView();
+			AddBoardToolbar();
 
-			itemsList.makeItem = MakeItem;
-			itemsList.bindItem = BindItem;
-			// itemsList.unbindItem = UnbindItem;
-			itemsList.reorderable = false;
-			itemsList.itemHeight = 32;
-			itemsList.showAlternatingRowBackgrounds = AlternatingRowBackground.All;
-			itemsList.selectionType = SelectionType.None;
-			itemsList.onSelectionChange += OnItemSelectionChange;
+			visibleItems = currentBoard?.items;
 
-			root.Add(itemsList);
+			MakeScrollList();
 
+			Database.onBoardsModified += OnBoardsModified;
+		}
+
+		private void ListGeoChanged(GeometryChangedEvent evt)
+		{
 			var board = new Board();
 			board.Add(new SimpleTextItem("Test Item xxx"));
 			board.Add(new SimpleTextItem("Test Item xxx1"));
 			board.Add(new SimpleTextItem("Test Item xxx2"));
 			board.Add(new SimpleTextItem("Test Item xxx 3"));
 
+			var ser = new SerializedBoard(board);
+			var json = JsonUtility.ToJson(ser, true);
+			Debug.Log(json);
+			
 			SetBoard(board);
+		}
 
-			Database.onBoardsModified += OnBoardsModified;
+		private void OnDisable()
+		{
+			Database.onBoardsModified -= OnBoardsModified;
 		}
 
 
-		private void AddToolbar()
+		private void AddMainToolbar()
 		{
 			var toolbar = new Toolbar();
 
-			// var addButton = new ToolbarButton(OnAddClicked);
-			// addButton.text = "Add";
-			// toolbar.Add(addButton);
-
 			boardsDropdown = new ToolbarMenu();
+			boardsDropdown.style.minWidth = 84;
 			toolbar.Add(boardsDropdown);
 			UpdateBoardsMenu();
 
@@ -115,31 +127,118 @@ namespace Pinboard
 			toolbar.Add(new ToolbarSpacer());
 
 			searchField = new ToolbarSearchField();
+			searchField.style.maxWidth = 164;
+			searchField.RegisterValueChangedCallback(OnSearchValueChanged);
 			toolbar.Add(searchField);
 
 			rootVisualElement.Insert(0, toolbar);
 		}
 
+		public void AddBoardToolbar()
+		{
+			var toolbar = new Toolbar();
+			boardToolbar = toolbar;
+			toolbar.AddToClassList(CLASS_BOARD_TOOLBAR);
+
+			toolbar.AddManipulator(new ContextualMenuManipulator(pop =>
+			{
+				pop.menu.AppendAction("Log1", action => { Debug.Log(action.name); });
+				pop.menu.AppendAction("Log2", action => { Debug.Log(action.name); });
+			}));
+
+			toolbar.AddManipulator(new ClickActionsManipulator(
+				                       () => {  }, () => { Debug.Log("double click"); }));
+
+			boardNameLabel = new Label("");
+			boardNameLabel.style.marginLeft = 4;
+			toolbar.Add(boardNameLabel);
+
+			rootVisualElement.Insert(1, toolbar);
+		}
+
+		public void UpdateBoardToolbar()
+		{
+			if (currentBoard == null)
+			{
+				boardNameLabel.text = "";
+				boardToolbar.tooltip = "";
+			}
+			else
+			{
+				boardNameLabel.text = currentBoard.title;
+				boardToolbar.tooltip = $"Title: {currentBoard.title}" +
+				                         $"\nCreated by: {currentBoard.createdBy}" +
+				                         $"\nCreation date: {currentBoard.CreationTime.ToShortDateString()}, {currentBoard.CreationTime.ToShortTimeString()}" 
+				                         /*+ $"\nUnique ID: {currentBoard.id}"*/;
+			}
+			
+		}
+
+
+		private void OnSearchValueChanged(ChangeEvent<string> evt)
+		{
+			var str = evt.newValue;
+
+			if (currentBoard == null)
+				return;
+
+			if (string.IsNullOrEmpty(str))
+			{
+				visibleItems = currentBoard.items;
+			}
+			else
+			{
+				var filters = new string[] {str.ToLower()};
+				visibleItems = currentBoard.items.Where(item => item.IsValidForSearch(filters)).ToList();
+			}
+
+			itemsList.itemsSource = visibleItems;
+			itemsList.Refresh();
+		}
+
+
+		private void MakeScrollList()
+		{
+			itemsList = new ListView();
+			itemsList.style.flexGrow = 1f;
+			itemsList.makeItem = MakeItem;
+			itemsList.bindItem = BindItem;
+			// itemsList.unbindItem = UnbindItem;
+			itemsList.reorderable = false;
+			itemsList.itemHeight = 22;
+			itemsList.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
+			itemsList.selectionType = SelectionType.None;
+			itemsList.onSelectionChange += OnItemSelectionChange;
+			itemsList.RegisterCallback<GeometryChangedEvent>(ListGeoChanged);
+
+			root.Add(itemsList);
+		}
 
 		private VisualElement MakeItem()
 		{
 			var root = new VisualElement();
-			root.style.flexDirection = FlexDirection.Row;
-			root.style.justifyContent = Justify.Center;
-			root.style.alignContent = Align.FlexStart;
+			root.AddToClassList(CLASS_LIST_ITEM_ROOT);
+
+
+			var img = new Image();
+			img.style.width = 15;
+			img.style.height = 15;
+			img.style.marginLeft = 2;
+			img.style.marginRight = 6;
+			root.Add(img);
 			return root;
 		}
 
 		private void BindItem(VisualElement element, int index)
 		{
-			currentBoard.items[index].BindVisualElement(element);
+			visibleItems[index].BindVisualElement(element);
 		}
+
 
 		// private void UnbindItem(VisualElement element, int index)
 		// {
 		// 	currentBoard.items[index].UnbindVisualElement(element)
 		// }
-
 
 		private void OnItemSelectionChange(IEnumerable<object> selection)
 		{
@@ -148,6 +247,7 @@ namespace Pinboard
 
 			var item = selection.First();
 		}
+
 
 		private void UpdateBoardsMenu()
 		{
@@ -232,8 +332,11 @@ namespace Pinboard
 			else
 			{
 				PinboardPrefs.LastOpenBoardID = board.id;
+				visibleItems = board.items;
 				itemsList.itemsSource = board.items;
 			}
+			
+			UpdateBoardToolbar();
 
 			itemsList.Refresh();
 			UpdateBoardsMenu();

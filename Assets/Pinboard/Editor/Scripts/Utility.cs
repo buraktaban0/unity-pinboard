@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Pinboard
@@ -7,7 +8,7 @@ namespace Pinboard
 	{
 		public static string GetUserName()
 		{
-			var name = System.Environment.MachineName;
+			var name = System.Environment.MachineName.Trim();
 
 			if (string.IsNullOrEmpty(name))
 			{
@@ -31,7 +32,7 @@ namespace Pinboard
 				if (error.Length > 0)
 				{
 					Debug.LogWarning(error);
-					return name;
+					return name.Trim();
 				}
 
 				name = data;
@@ -41,7 +42,18 @@ namespace Pinboard
 				Debug.LogWarning(e);
 			}
 
-			return name;
+			return name.Trim();
+		}
+
+		public static string GetProjectName()
+		{
+			var segments = Application.dataPath.Split('/');
+			var complexName = segments[segments.Length - 2].Trim().ToLower();
+			var chars = complexName.Replace(" ", "-").ToCharArray();
+
+			chars = chars.Where(c => char.IsLetterOrDigit(c) || c == '-' || c == '_').ToArray();
+			var simpleName = new string(chars);
+			return simpleName;
 		}
 
 		public static long GetUnixTimestamp()
@@ -63,8 +75,15 @@ namespace Pinboard
 		{
 			return DateTimeOffset.FromUnixTimeSeconds(seconds).LocalDateTime;
 		}
-		
-		
-		
+
+
+		public static bool DoStringSearch(string val, string[] filters)
+		{
+			val = val.ToLower();
+
+			var result = filters.Any(f => val.Contains(f));
+
+			return result;
+		}
 	}
 }

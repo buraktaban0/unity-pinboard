@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Pinboard
 {
+	[System.Serializable]
 	public struct TypedJson
 	{
 		public string type;

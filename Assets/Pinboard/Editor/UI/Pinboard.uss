@@ -5,10 +5,50 @@
     display: flex;
 }
 
+
+Toolbar {
+    background-color: #303030;
+}
+
+.board-toolbar {
+    justify-content: center;
+}
+
+.board-toolbar:hover {
+    background-color: #353535;
+}
+.board-toolbar:focus {
+    background-color: #853535;
+}
+
+
+Label {
+    -unity-text-align: middle-left;
+}
+
+ToolbarMenu {
+    background-color: #303030;
+}
+
+ToolbarMenu:hover {
+    background-color: #353535;
+}
+
+Image {
+    align-self: center;
+}
+
+
 #root {
     flex-grow: 1;
     flex-direction: column;
-    background-color: #1f1b2f;
+    /*background-color: #1f1b2f;*/
+}
+
+.list-item-root {
+    padding: 2px;
+    flex-direction: row;
+    justify-content: flex-start;
 }
 
 Toolbar {

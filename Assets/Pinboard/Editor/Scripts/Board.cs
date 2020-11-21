@@ -12,9 +12,9 @@ namespace Pinboard
 	[System.Serializable]
 	public class Board
 	{
-		public string id;
+		public string id = UID.Get();
 
-		public bool isPrivate = false;
+		public BoardAccessibility accessibility = BoardAccessibility.Global;
 
 		public string title = "New Board";
 
@@ -25,18 +25,16 @@ namespace Pinboard
 
 		public DateTime CreationTime => Utility.FromUnixToLocal(createdAt);
 
-		public List<BoardItem> items;
+		public List<BoardItem> items = new List<BoardItem>();
 
 		public Board()
 		{
-			id = GUID.Generate().ToString();
-			items = new List<BoardItem>();
 		}
 
 		public Board(SerializedBoard serializedBoard)
 		{
 			id = serializedBoard.id;
-			isPrivate = serializedBoard.isPrivate;
+			accessibility = serializedBoard.accessibility;
 			title = serializedBoard.title;
 			createdBy = serializedBoard.createdBy;
 			createdAt = serializedBoard.createdAt;
@@ -52,8 +50,7 @@ namespace Pinboard
 		public static void Test()
 		{
 			Debug.Log(Utility.GetUserName());
-
-			Debug.Log(Application.dataPath);
+			Debug.Log(Utility.GetProjectName());
 		}
 	}
 
@@ -62,20 +59,20 @@ namespace Pinboard
 	public class SerializedBoard
 	{
 		public string id;
-		public bool isPrivate;
+		public BoardAccessibility accessibility;
 		public string title;
 		public string createdBy;
 		public long createdAt;
-		public List<TypedJson> items;
+		public TypedJson[] items;
 
 		public SerializedBoard(Board board)
 		{
 			id = board.id;
-			isPrivate = board.isPrivate;
+			accessibility = board.accessibility;
 			title = board.title;
 			createdBy = board.createdBy;
 			createdAt = board.createdAt;
-			items = board.items.Select(TypedJson.Create).ToList();
+			items = board.items.Select(TypedJson.Create).ToArray();
 		}
 	}
 }

@@ -8,7 +8,7 @@ namespace Pinboard
 	[System.Serializable]
 	public abstract class BoardItem
 	{
-		public string id = GUID.Generate().ToString();
+		public string id = UID.Get();
 
 		public string author = PinboardCore.User;
 
@@ -17,6 +17,8 @@ namespace Pinboard
 
 		public abstract void BindVisualElement(VisualElement el);
 
+		public abstract void UnbindVisualElement(VisualElement el);
+		
 		public virtual void OnClick()
 		{
 		}
@@ -24,5 +26,11 @@ namespace Pinboard
 		public virtual void OnDoubleClick()
 		{
 		}
+
+		public virtual bool IsValidForSearch(string[] filters)
+		{
+			return false;
+		}
+
 	}
 }
