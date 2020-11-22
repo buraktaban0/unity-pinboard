@@ -9,6 +9,12 @@ namespace Pinboard
 		public string type;
 		public string data;
 
+		public TypedJson(string type, string json)
+		{
+			this.type = type;
+			this.data = json;
+		}
+
 		public static TypedJson Create(object obj)
 		{
 			return new TypedJson

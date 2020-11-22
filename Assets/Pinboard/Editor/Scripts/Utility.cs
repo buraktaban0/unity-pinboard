@@ -45,7 +45,7 @@ namespace Pinboard
 			return name.Trim();
 		}
 
-		public static string GetProjectName()
+		public static string GetProjectID()
 		{
 			var segments = Application.dataPath.Split('/');
 			var complexName = segments[segments.Length - 2].Trim().ToLower();

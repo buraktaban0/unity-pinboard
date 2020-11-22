@@ -8,6 +8,7 @@ namespace Pinboard
 	[System.Serializable]
 	public abstract class BoardItem
 	{
+		
 		public string id = UID.Get();
 
 		public string author = PinboardCore.User;

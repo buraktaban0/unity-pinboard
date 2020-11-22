@@ -9,7 +9,6 @@ using UnityEngine.Serialization;
 
 namespace Pinboard
 {
-	[System.Serializable]
 	public class Board
 	{
 		public string id = UID.Get();
@@ -20,7 +19,6 @@ namespace Pinboard
 
 		public string createdBy = PinboardCore.User;
 
-		[FormerlySerializedAs("createdAtUnix")]
 		public long createdAt = Utility.GetUnixTimestamp();
 
 		public DateTime CreationTime => Utility.FromUnixToLocal(createdAt);
@@ -38,7 +36,6 @@ namespace Pinboard
 			title = serializedBoard.title;
 			createdBy = serializedBoard.createdBy;
 			createdAt = serializedBoard.createdAt;
-			items = serializedBoard.items.Select(typedJson => typedJson.ToObject<BoardItem>()).ToList();
 		}
 
 		public void Add(BoardItem item)
@@ -50,7 +47,7 @@ namespace Pinboard
 		public static void Test()
 		{
 			Debug.Log(Utility.GetUserName());
-			Debug.Log(Utility.GetProjectName());
+			Debug.Log(Utility.GetProjectID());
 		}
 	}
 
@@ -63,7 +60,8 @@ namespace Pinboard
 		public string title;
 		public string createdBy;
 		public long createdAt;
-		public TypedJson[] items;
+
+		public string[] itemIds;
 
 		public SerializedBoard(Board board)
 		{
@@ -72,7 +70,7 @@ namespace Pinboard
 			title = board.title;
 			createdBy = board.createdBy;
 			createdAt = board.createdAt;
-			items = board.items.Select(TypedJson.Create).ToArray();
+			itemIds = board.items.Select(item => item.id).ToArray();
 		}
 	}
 }

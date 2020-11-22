@@ -14,7 +14,7 @@ namespace Pinboard
 
 		static PinboardResources()
 		{
-			var iconsDir = PinboardCore.DIR_UI + "/Icons/";
+			var iconsDir = PinboardWindow.DIR_UI + "/Icons/";
 			ICON_TEXT = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/text.png");
 			ICON_UNITY = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/scene.png");
 			ICON_GO = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/go.png");
