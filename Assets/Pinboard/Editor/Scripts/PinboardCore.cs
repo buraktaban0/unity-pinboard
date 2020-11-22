@@ -8,6 +8,7 @@ namespace Pinboard
 	public static class PinboardCore
 	{
 		public static string DIR_ROOT = "Assets/Pinboard";
+		public static string DIR_UI = DIR_ROOT + "/UI";
 		public static string DIR_DATA = DIR_ROOT + "/Data";
 
 		public static string PATH_CFG = DIR_ROOT + "/PinboardConfig.asset";
@@ -65,19 +66,17 @@ namespace Pinboard
 			InitializeConfig();
 
 			PinboardDatabase.LoadBoards();
+
+			PinboardWindow.Instance?.Refresh();
 		}
 
 
 		private static void InitializeConfig()
 		{
-			Debug.Log("a");
 			_config = AssetDatabase.LoadAssetAtPath<PinboardConfig>(PATH_CFG);
 
-			Debug.Log(PATH_CFG);
 			if (_config == null)
 			{
-				Debug.Log("b");
-
 				_config = ScriptableObject.CreateInstance<PinboardConfig>();
 				var dir = DIR_PROJECT + DIR_ROOT;
 				Debug.Log(dir);

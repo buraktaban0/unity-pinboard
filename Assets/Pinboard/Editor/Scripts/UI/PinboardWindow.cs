@@ -21,6 +21,7 @@ namespace Pinboard
 		public const string CLASS_LIST_ITEM_ROOT = "list-item-root";
 		public const string CLASS_BOARD_TOOLBAR = "board-toolbar";
 
+		public static PinboardWindow Instance;
 
 		[MenuItem("Pinboard/Test")]
 		public static void Open()
@@ -31,6 +32,8 @@ namespace Pinboard
 			window.titleContent = new GUIContent("Pinboard");
 
 			window.Refresh();
+
+			Instance = window;
 		}
 
 
@@ -69,7 +72,26 @@ namespace Pinboard
 
 			MakeScrollList();
 
-			PinboardDatabase.onBoardsModified += OnBoardsModified;
+			PinboardDatabase.onBoardAdded += OnBoardAdded;
+			PinboardDatabase.onBoardDeleted += OnBoardDeleted;
+		}
+
+
+		private void OnDisable()
+		{
+			PinboardDatabase.onBoardAdded -= OnBoardAdded;
+			PinboardDatabase.onBoardDeleted -= OnBoardDeleted;
+		}
+
+
+		private void OnBoardDeleted(Board board)
+		{
+			Refresh();
+		}
+
+		private void OnBoardAdded(Board board)
+		{
+			Refresh();
 		}
 
 		private void ListGeoChanged(GeometryChangedEvent evt)
@@ -83,13 +105,8 @@ namespace Pinboard
 			var ser = new SerializedBoard(board);
 			var json = JsonUtility.ToJson(ser, true);
 			Debug.Log(json);
-			
-			SetBoard(board);
-		}
 
-		private void OnDisable()
-		{
-			PinboardDatabase.onBoardsModified -= OnBoardsModified;
+			SetBoard(board);
 		}
 
 
@@ -126,7 +143,7 @@ namespace Pinboard
 			}));
 
 			toolbar.AddManipulator(new ClickActionsManipulator(
-				                       () => {  }, () => { Debug.Log("double click"); }));
+				                       () => { }, () => { Debug.Log("double click"); }));
 
 			boardNameLabel = new Label("");
 			boardNameLabel.style.marginLeft = 4;
@@ -146,11 +163,10 @@ namespace Pinboard
 			{
 				boardNameLabel.text = currentBoard.title;
 				boardToolbar.tooltip = $"Title: {currentBoard.title}" +
-				                         $"\nCreated by: {currentBoard.createdBy}" +
-				                         $"\nCreation date: {currentBoard.CreationTime.ToShortDateString()}, {currentBoard.CreationTime.ToShortTimeString()}" 
-				                         /*+ $"\nUnique ID: {currentBoard.id}"*/;
+				                       $"\nCreated by: {currentBoard.createdBy}" +
+				                       $"\nCreation date: {currentBoard.CreationTime.ToShortDateString()}, {currentBoard.CreationTime.ToShortTimeString()}"
+					/*+ $"\nUnique ID: {currentBoard.id}"*/;
 			}
-			
 		}
 
 
@@ -257,11 +273,7 @@ namespace Pinboard
 		private void TryCreateNewBoard(DropdownMenuAction action)
 		{
 			Debug.Log("Create board");
-		}
-
-		private void OnBoardsModified()
-		{
-			Refresh();
+			
 		}
 
 
@@ -314,11 +326,12 @@ namespace Pinboard
 				visibleItems = board.items;
 				itemsList.itemsSource = board.items;
 			}
-			
+
 			UpdateBoardToolbar();
 
-			itemsList.Refresh();
 			UpdateBoardsMenu();
+			
+			itemsList.Refresh();
 		}
 	}
 }
