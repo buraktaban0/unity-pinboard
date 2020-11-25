@@ -2,7 +2,7 @@
 
 namespace Pinboard
 {
-	public static class UID
+	public static class Guid
 	{
 		private const string RANGE = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
@@ -17,6 +17,8 @@ namespace Pinboard
 
 		public static string Get()
 		{
+			return System.Guid.NewGuid().ToString();
+
 			int len = CHARS.Length;
 			for (int i = 0; i < UID_LENGTH; i++)
 			{

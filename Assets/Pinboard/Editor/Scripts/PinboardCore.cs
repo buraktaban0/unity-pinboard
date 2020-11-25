@@ -8,8 +8,9 @@ namespace Pinboard
 	public static class PinboardCore
 	{
 		public static string DIR_ROOT = "Assets/Pinboard";
-		public static string DIR_UI = DIR_ROOT + "/UI";
-		public static string DIR_DATA = DIR_ROOT + "/Data";
+		public static string DIR_EDITOR = "Assets/Pinboard";
+		public static string DIR_UI = DIR_EDITOR + "/UI";
+		public static string DIR_DATA = DIR_EDITOR + "/Data";
 
 		public static string PATH_CFG = DIR_ROOT + "/PinboardConfig.asset";
 		public static string DIR_PROJECT => Application.dataPath.Replace("Assets", "");
@@ -63,6 +64,12 @@ namespace Pinboard
 
 		static PinboardCore()
 		{
+			Initialize();
+		}
+
+
+		public static void Initialize()
+		{
 			InitializeConfig();
 
 			PinboardDatabase.LoadBoards();
@@ -91,6 +98,19 @@ namespace Pinboard
 				AssetDatabase.SaveAssets();
 				AssetDatabase.Refresh();
 			}
+		}
+
+
+		public static Board TryCreateBoard(CreateBoardOptions options)
+		{
+			var board = new Board();
+			board.title = options.title;
+			board.accessibility = options.accessibility;
+
+			PinboardDatabase.AddBoard(board);
+			PinboardDatabase.SaveBoards();
+
+			return board;
 		}
 	}
 }

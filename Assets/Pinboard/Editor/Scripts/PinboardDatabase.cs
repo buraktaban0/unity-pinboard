@@ -5,6 +5,7 @@ using System.Linq;
 using Pinboard.Items;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Pinboard
 {
@@ -22,9 +23,9 @@ namespace Pinboard
 
 		public static string DIR_BOARDS = DIR_PINBOARD_ROOT + "Boards/";
 
-		public static PinboardBoardEvent onBoardAdded;
-		public static PinboardBoardEvent onBoardDeleted;
-		public static PinboardEvent onBoardsModified;
+		public static PinboardBoardEvent onBoardAdded = delegate { };
+		public static PinboardBoardEvent onBoardDeleted = delegate { };
+		public static PinboardEvent onBoardsModified = delegate { };
 
 		public static List<Board> boards = new List<Board>(32);
 
@@ -58,9 +59,63 @@ namespace Pinboard
 
 			boards.Remove(board);
 
-			SaveBoards();
+			if (board.accessibility == BoardAccessibility.ProjectPublic)
+			{
+				DeleteBoardFromAssetDatabase(board);
+			}
+			else
+			{
+				DeleteBoardFromEditorPrefsWithContext(board, board.accessibility == BoardAccessibility.Global
+					                                      ? ""
+					                                      : PinboardCore.ProjectID);
+			}
+
+			AssetDatabase.SaveAssets();
 
 			onBoardDeleted.Invoke(board);
+
+			board = null;
+		}
+
+		private static void DeleteBoardFromAssetDatabase(Board board)
+		{
+			var serializedBoardContainers = LoadAssets<SerializedBoardContainer>();
+
+			var cont = serializedBoardContainers.FirstOrDefault(c => c.serializedBoard.id == board.id);
+			if (cont != null)
+			{
+				Object.DestroyImmediate(cont, true);
+			}
+
+			var boardItemContainers = LoadAssets<BoardItemJsonContainer>();
+
+			boardItemContainers
+				.Where(c => board.items.Any(i => i.id == new TypedJson(c.type, c.data).ToObject<BoardItem>().id))
+				.ToList().ForEach(c => Object.DestroyImmediate(c, true));
+		}
+
+
+		private static void DeleteBoardFromEditorPrefsWithContext(Board board, string ctx)
+		{
+			string keyIDs = KEY_IDS;
+			if (string.IsNullOrEmpty(ctx) == false)
+			{
+				keyIDs += $"_{ctx}";
+			}
+
+			var ids = EditorPrefs.GetString(keyIDs, "");
+
+			if (string.IsNullOrEmpty(ids))
+				return;
+
+			var idsSplit = ids.Split(new string[] {TOKEN_BREAK}, StringSplitOptions.None).ToList();
+			idsSplit.Remove(board.id);
+
+			var joinedIds = string.Join(TOKEN_BREAK, idsSplit);
+			EditorPrefs.SetString(keyIDs, joinedIds);
+
+			board.items.Select(item => item.id).ToList().ForEach(DeleteIdFromEditorPrefs);
+			DeleteIdFromEditorPrefs(board.id);
 		}
 
 		public static void LoadBoards()
@@ -72,12 +127,12 @@ namespace Pinboard
 			LoadBoardsFromEditorPrefsWithContext(PinboardCore.ProjectID);
 		}
 
-		private static void LoadBoardsFromEditorPrefsWithContext(string cxt)
+		private static void LoadBoardsFromEditorPrefsWithContext(string ctx)
 		{
 			string keyIDs = KEY_IDS;
-			if (string.IsNullOrEmpty(cxt) == false)
+			if (string.IsNullOrEmpty(ctx) == false)
 			{
-				keyIDs += $"_{cxt}";
+				keyIDs += $"_{ctx}";
 			}
 
 			var ids = EditorPrefs.GetString(keyIDs, "");
@@ -142,6 +197,14 @@ namespace Pinboard
 			var typedJson = JsonUtility.FromJson<TypedJson>(typedJsonContent);
 			var item = typedJson.ToObject<BoardItem>();
 			return item;
+		}
+
+		private static void DeleteIdFromEditorPrefs(string id)
+		{
+			var key = $"{KEY_ID}_{id}";
+
+			if (EditorPrefs.HasKey(key))
+				EditorPrefs.DeleteKey(key);
 		}
 
 		private static void LoadBoardsFromAssetDatabase()
@@ -287,5 +350,19 @@ namespace Pinboard
 		}
 
 
+		private static List<T> LoadAssets<T>() where T : UnityEngine.Object
+		{
+			var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
+
+			if (guids == null || guids.Length < 1)
+				return new List<T>();
+
+			var assets =
+				guids.Select(
+					guid => AssetDatabase.LoadAssetAtPath<T>(
+						AssetDatabase.GUIDToAssetPath(guid))).ToList();
+
+			return assets;
+		}
 	}
 }

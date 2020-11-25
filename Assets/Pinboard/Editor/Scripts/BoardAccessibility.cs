@@ -9,13 +9,13 @@ namespace Pinboard
 		ProjectPublic = 3
 	}
 
-	public static class BoardTypeDesc
+	public static class BoardAccessibilityDesc
 	{
-		public const string Global = "All projects on the machine";
-		public const string ProjectPrivate = "This project, private";
-		public const string ProjectPublic = "This project, shared with source control";
+		public const string Global = "All projects on the machine.";
+		public const string ProjectPrivate = "This project, private.";
+		public const string ProjectPublic = "This project, shared through source control.";
 
-		public static string For(BoardAccessibility accessibility)
+		public static string Get(BoardAccessibility accessibility)
 		{
 			switch (accessibility)
 			{

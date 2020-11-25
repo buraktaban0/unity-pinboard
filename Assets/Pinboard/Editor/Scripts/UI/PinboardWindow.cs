@@ -96,17 +96,17 @@ namespace Pinboard
 
 		private void ListGeoChanged(GeometryChangedEvent evt)
 		{
-			var board = new Board();
-			board.Add(new SimpleTextItem("Test Item xxx"));
-			board.Add(new SimpleTextItem("Test Item xxx1"));
-			board.Add(new SimpleTextItem("Test Item xxx2"));
-			board.Add(new SimpleTextItem("Test Item xxx 3"));
-
-			var ser = new SerializedBoard(board);
-			var json = JsonUtility.ToJson(ser, true);
-			Debug.Log(json);
-
-			SetBoard(board);
+			// var board = new Board();
+			// board.Add(new SimpleTextItem("Test Item xxx"));
+			// board.Add(new SimpleTextItem("Test Item xxx1"));
+			// board.Add(new SimpleTextItem("Test Item xxx2"));
+			// board.Add(new SimpleTextItem("Test Item xxx 3"));
+			//
+			// var ser = new SerializedBoard(board);
+			// var json = JsonUtility.ToJson(ser, true);
+			// Debug.Log(json);
+			//
+			// SetBoard(board);
 		}
 
 
@@ -129,6 +129,41 @@ namespace Pinboard
 
 			rootVisualElement.Insert(0, toolbar);
 		}
+		
+		
+		private void UpdateBoardsMenu()
+		{
+			boardsDropdown.text = currentBoard != null ? currentBoard.title : "Boards";
+			boardsDropdown.variant = ToolbarMenu.Variant.Default;
+
+			boardsDropdown.menu.MenuItems().Clear();
+
+			for (int i = 0; i < PinboardDatabase.boards.Count; i++)
+			{
+				var board = PinboardDatabase.boards[i];
+				boardsDropdown.menu.AppendAction(board.title, action =>
+				                                 {
+					                                 if (action.name == board.title)
+					                                 {
+						                                 SetBoard(board);
+					                                 }
+				                                 },
+				                                 board == currentBoard
+					                                 ? DropdownMenuAction.Status.Checked
+					                                 : DropdownMenuAction.Status.Normal);
+			}
+
+			boardsDropdown.menu.AppendSeparator();
+			boardsDropdown.menu.AppendAction("New...", TryCreateNewBoard);
+		}
+
+		private void TryCreateNewBoard(DropdownMenuAction action)
+		{
+			Debug.Log("Try Create board");
+
+			CreateBoardPopup.ShowDialog();
+		}
+
 
 		public void AddBoardToolbar()
 		{
@@ -243,38 +278,6 @@ namespace Pinboard
 			var item = selection.First();
 		}
 
-
-		private void UpdateBoardsMenu()
-		{
-			boardsDropdown.text = currentBoard != null ? currentBoard.title : "Boards";
-			boardsDropdown.variant = ToolbarMenu.Variant.Default;
-
-			boardsDropdown.menu.MenuItems().Clear();
-
-			for (int i = 0; i < PinboardDatabase.boards.Count; i++)
-			{
-				var board = PinboardDatabase.boards[i];
-				boardsDropdown.menu.AppendAction(board.title, action =>
-				                                 {
-					                                 if (action.name == board.title)
-					                                 {
-						                                 SetBoard(board);
-					                                 }
-				                                 },
-				                                 board == currentBoard
-					                                 ? DropdownMenuAction.Status.Checked
-					                                 : DropdownMenuAction.Status.Normal);
-			}
-
-			boardsDropdown.menu.AppendSeparator();
-			boardsDropdown.menu.AppendAction("New...", TryCreateNewBoard);
-		}
-
-		private void TryCreateNewBoard(DropdownMenuAction action)
-		{
-			Debug.Log("Create board");
-			
-		}
 
 
 		public void Refresh()

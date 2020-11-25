@@ -11,7 +11,7 @@ namespace Pinboard
 {
 	public class Board
 	{
-		public string id = UID.Get();
+		public string id = Guid.Get();
 
 		public BoardAccessibility accessibility = BoardAccessibility.Global;
 
