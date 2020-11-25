@@ -125,12 +125,5 @@ namespace Pinboard
 		{
 		}
 
-
-		[MenuItem("Pinboard/Clear All")]
-		public static void ClearAllBoards()
-		{
-			PinboardCore.Initialize();
-			PinboardDatabase.boards.ForEach(PinboardDatabase.DeleteBoard);
-		}
 	}
 }

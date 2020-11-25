@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -111,6 +112,15 @@ namespace Pinboard
 			PinboardDatabase.SaveBoards();
 
 			return board;
+		}
+
+
+		[MenuItem("Pinboard/Clear All")]
+		public static void ClearAllBoards()
+		{
+			PinboardCore.Initialize();
+			PinboardDatabase.boards.ToList().ForEach(PinboardDatabase.DeleteBoard);
+			PinboardWindow.Instance?.Refresh();
 		}
 	}
 }

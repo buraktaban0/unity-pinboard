@@ -87,6 +87,7 @@ namespace Pinboard
 		private void OnBoardDeleted(Board board)
 		{
 			Refresh();
+			SetBoard(board);
 		}
 
 		private void OnBoardAdded(Board board)
@@ -129,8 +130,8 @@ namespace Pinboard
 
 			rootVisualElement.Insert(0, toolbar);
 		}
-		
-		
+
+
 		private void UpdateBoardsMenu()
 		{
 			boardsDropdown.text = currentBoard != null ? currentBoard.title : "Boards";
@@ -279,7 +280,6 @@ namespace Pinboard
 		}
 
 
-
 		public void Refresh()
 		{
 			if (PinboardDatabase.boards.Count < 1)
@@ -333,7 +333,7 @@ namespace Pinboard
 			UpdateBoardToolbar();
 
 			UpdateBoardsMenu();
-			
+
 			itemsList.Refresh();
 		}
 	}
