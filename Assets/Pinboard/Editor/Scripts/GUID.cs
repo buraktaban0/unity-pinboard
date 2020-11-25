@@ -17,7 +17,7 @@ namespace Pinboard
 
 		public static string Get()
 		{
-			return System.Guid.NewGuid().ToString();
+			return System.Guid.NewGuid().ToString().Replace("-", "");
 
 			int len = CHARS.Length;
 			for (int i = 0; i < UID_LENGTH; i++)

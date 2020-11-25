@@ -87,12 +87,12 @@ namespace Pinboard
 		private void OnBoardDeleted(Board board)
 		{
 			Refresh();
-			SetBoard(board);
 		}
 
 		private void OnBoardAdded(Board board)
 		{
 			Refresh();
+			SetBoard(board);
 		}
 
 		private void ListGeoChanged(GeometryChangedEvent evt)
@@ -174,6 +174,17 @@ namespace Pinboard
 
 			toolbar.AddManipulator(new ContextualMenuManipulator(pop =>
 			{
+				pop.menu.AppendAction("Delete Board", action =>
+				{
+					var delete = EditorUtility.DisplayDialog("Delete Board",
+					                                         $"Deleting a board is destructive and irreversible, do you want to continue to delete \"{currentBoard.title}\"?",
+					                                         "Yes", "No");
+
+					if (delete)
+					{
+						PinboardDatabase.DeleteBoard(currentBoard);
+					}
+				});
 				pop.menu.AppendAction("Log1", action => { Debug.Log(action.name); });
 				pop.menu.AppendAction("Log2", action => { Debug.Log(action.name); });
 			}));
@@ -235,7 +246,7 @@ namespace Pinboard
 			itemsList.makeItem = MakeItem;
 			itemsList.bindItem = BindItem;
 			// itemsList.unbindItem = UnbindItem;
-			itemsList.reorderable = false;
+			itemsList.reorderable = true;
 			itemsList.itemHeight = 22;
 			itemsList.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
 			itemsList.selectionType = SelectionType.None;
@@ -250,6 +261,21 @@ namespace Pinboard
 			var root = new VisualElement();
 			root.AddToClassList(CLASS_LIST_ITEM_ROOT);
 
+			root.AddManipulator(new ContextualMenuManipulator(evt => evt.menu.AppendAction("Delete Entry",
+				                                                  action =>
+				                                                  {
+					                                                  var b = EditorUtility.DisplayDialog(
+						                                                  "Deleting Board Entry",
+						                                                  "Are you sure you want to delete this entry?",
+						                                                  "Yes", "No");
+
+					                                                  if (b)
+					                                                  {
+						                                                  currentBoard.items.Remove(
+							                                                  root.userData as BoardItem);
+						                                                  Refresh();
+					                                                  }
+				                                                  })));
 
 			var img = new Image();
 			img.style.width = 15;
@@ -262,6 +288,7 @@ namespace Pinboard
 
 		private void BindItem(VisualElement element, int index)
 		{
+			element.userData = visibleItems[index];
 			visibleItems[index].BindVisualElement(element);
 		}
 

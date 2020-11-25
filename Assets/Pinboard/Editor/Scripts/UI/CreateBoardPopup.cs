@@ -33,7 +33,7 @@ namespace Pinboard
 			window.minSize = size;
 			window.maxSize = size;
 
-			window.ShowUtility();
+			window.Show();
 		}
 
 
@@ -46,7 +46,8 @@ namespace Pinboard
 
 			var dropdown = new ToolbarMenu();
 			dropdown.style.flexGrow = 0;
-			dropdown.style.flexShrink = 1;
+			dropdown.style.flexShrink = 0;
+			dropdown.style.width = 110;
 
 			var values = (Enum.GetValues(typeof(BoardAccessibility)) as BoardAccessibility[]).ToList();
 			var names = Enum.GetNames(typeof(BoardAccessibility)).Select(n => n.SplitCamelCase()).ToList();
@@ -59,9 +60,9 @@ namespace Pinboard
 
 			var descLbl = new Label(descs[0]);
 			descLbl.style.marginLeft = 8;
-			descLbl.style.flexGrow = 1;
-			descLbl.style.flexShrink = 0;
+			descLbl.style.flexShrink = 1;
 			descLbl.style.flexWrap = Wrap.Wrap;
+			descLbl.style.whiteSpace = WhiteSpace.Normal;
 
 			for (var i = 0; i < values.Count; i++)
 			{
@@ -81,9 +82,11 @@ namespace Pinboard
 
 
 			var row0 = new VisualElement();
+			row0.style.height = 20;
 			row0.style.marginTop = 8;
 			row0.style.marginBottom = 8;
 			row0.style.flexDirection = FlexDirection.Row;
+			row0.style.alignItems = Align.Center;
 			//row0.style.justifyContent = Justify.SpaceBetween;
 
 
@@ -95,6 +98,7 @@ namespace Pinboard
 			row1.style.marginTop = 8;
 			row1.style.marginBottom = 8;
 			var nameField = new TextField(64, false, false, '*') {value = "New Board"};
+			
 			row1.Add(nameField);
 
 			root.Add(row1);
@@ -113,11 +117,13 @@ namespace Pinboard
 				PinboardCore.TryCreateBoard(createBoardOptions);
 				this.Close();
 			}) {text = "Create"};
+			
 
 			//row2.Add(cancelButton);
 			row2.Add(createButton);
 
 			root.Add(row2);
+
 		}
 
 

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace Pinboard
@@ -85,12 +86,37 @@ namespace Pinboard
 
 			return result;
 		}
-		
+
 		public static string SplitCamelCase(this string input)
 		{
 			return System.Text.RegularExpressions.Regex
 			             .Replace(input, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
 		}
-		
+
+
+		public static void MakeDirs(string path)
+		{
+			path = path.Replace("\\", "/");
+
+			var segments = path.Split('/').ToList();
+
+			if (segments.Last().Contains("."))
+				segments.RemoveAt(segments.Count - 1);
+
+			if (segments.Count < 2)
+				return;
+
+			var parent = segments[0];
+			
+			for (int i = 1; i < segments.Count; i++)
+			{
+				if (AssetDatabase.IsValidFolder(parent + "/" + segments[i]) == false)
+				{
+					AssetDatabase.CreateFolder(parent, segments[i]);
+				}
+
+				parent = parent + "/" + segments[i];
+			}
+		}
 	}
 }

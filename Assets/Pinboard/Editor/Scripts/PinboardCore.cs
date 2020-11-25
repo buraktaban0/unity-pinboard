@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using Pinboard.Items;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace Pinboard
 	public static class PinboardCore
 	{
 		public static string DIR_ROOT = "Assets/Pinboard";
-		public static string DIR_EDITOR = "Assets/Pinboard";
+		public static string DIR_EDITOR = DIR_ROOT + "/Editor";
 		public static string DIR_UI = DIR_EDITOR + "/UI";
 		public static string DIR_DATA = DIR_EDITOR + "/Data";
 
@@ -91,13 +92,10 @@ namespace Pinboard
 				if (Directory.Exists(dir) == false)
 				{
 					Directory.CreateDirectory(dir);
-					AssetDatabase.SaveAssets();
-					AssetDatabase.Refresh();
 				}
-
-				AssetDatabase.CreateAsset(_config, PATH_CFG);
+				
+				PinboardDatabase.CreateAsset(_config, PATH_CFG);
 				AssetDatabase.SaveAssets();
-				AssetDatabase.Refresh();
 			}
 		}
 
@@ -107,7 +105,10 @@ namespace Pinboard
 			var board = new Board();
 			board.title = options.title;
 			board.accessibility = options.accessibility;
-
+			board.items.Add(new SimpleTextItem("Fresh board!"));
+			board.items.Add(new SimpleTextItem("Fresh board2!"));
+			board.items.Add(new SimpleTextItem("Fresh board3!"));
+			
 			PinboardDatabase.AddBoard(board);
 			PinboardDatabase.SaveBoards();
 

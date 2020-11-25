@@ -84,7 +84,8 @@ namespace Pinboard
 			var cont = serializedBoardContainers.FirstOrDefault(c => c.serializedBoard.id == board.id);
 			if (cont != null)
 			{
-				Object.DestroyImmediate(cont, true);
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(cont));
+				Debug.Log("Deleted asset");
 			}
 
 			var boardItemContainers = LoadAssets<BoardItemJsonContainer>();
@@ -109,7 +110,9 @@ namespace Pinboard
 				return;
 
 			var idsSplit = ids.Split(new string[] {TOKEN_BREAK}, StringSplitOptions.None).ToList();
-			idsSplit.Remove(board.id);
+
+			if (idsSplit.Contains(board.id))
+				idsSplit.Remove(board.id);
 
 			var joinedIds = string.Join(TOKEN_BREAK, idsSplit);
 			EditorPrefs.SetString(keyIDs, joinedIds);
@@ -300,28 +303,31 @@ namespace Pinboard
 		{
 			var serializedBoard = new SerializedBoard(board);
 			var items = board.items;
-			var pathBoard = PinboardCore.DIR_DATA + $"/{board.id}.board";
+			var pathBoard = PinboardCore.DIR_DATA + $"/{board.id}.asset";
 			var boardContainer = AssetDatabase.LoadAssetAtPath<SerializedBoardContainer>(pathBoard);
 			if (boardContainer == null)
 			{
 				boardContainer = ScriptableObject.CreateInstance<SerializedBoardContainer>();
-				AssetDatabase.CreateAsset(boardContainer, pathBoard);
+				CreateAsset(boardContainer, pathBoard);
 			}
 
 			boardContainer.serializedBoard = serializedBoard;
+			EditorUtility.SetDirty(boardContainer);
 
 			foreach (var item in items)
 			{
-				var path = PinboardCore.DIR_DATA + $"/{item.id}.boarditem";
+				var path = PinboardCore.DIR_DATA + $"/{item.id}.asset";
 				var itemContainer = AssetDatabase.LoadAssetAtPath<BoardItemJsonContainer>(path);
 				if (itemContainer == null)
 				{
 					itemContainer = ScriptableObject.CreateInstance<BoardItemJsonContainer>();
-					AssetDatabase.CreateAsset(itemContainer, path);
+					CreateAsset(itemContainer, path);
 				}
 
 				itemContainer.type = item.GetType().FullName;
 				itemContainer.data = JsonUtility.ToJson(item);
+
+				EditorUtility.SetDirty(itemContainer);
 			}
 		}
 
@@ -363,6 +369,18 @@ namespace Pinboard
 						AssetDatabase.GUIDToAssetPath(guid))).ToList();
 
 			return assets;
+		}
+
+		public static void CreateAsset(UnityEngine.Object asset, string path)
+		{
+			if (AssetDatabase.IsMainAsset(asset))
+			{
+				EditorUtility.SetDirty(asset);
+				return;
+			}
+
+			Utility.MakeDirs(path);
+			AssetDatabase.CreateAsset(asset, path);
 		}
 	}
 }
