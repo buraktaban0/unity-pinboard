@@ -75,6 +75,7 @@ namespace Pinboard
 
 			PinboardDatabase.onBoardAdded += OnBoardAdded;
 			PinboardDatabase.onBoardDeleted += OnBoardDeleted;
+			PinboardDatabase.onBoardsModified += OnBoardsModified;
 
 			this.Refresh();
 		}
@@ -84,6 +85,12 @@ namespace Pinboard
 		{
 			PinboardDatabase.onBoardAdded -= OnBoardAdded;
 			PinboardDatabase.onBoardDeleted -= OnBoardDeleted;
+			PinboardDatabase.onBoardsModified -= OnBoardsModified;
+		}
+
+		private void OnBoardsModified()
+		{
+			Refresh();
 		}
 
 
@@ -215,7 +222,6 @@ namespace Pinboard
 				var entryName = PinboardCore.EntryTypeNames[i];
 				addMenu.menu.AppendAction(entryName, action =>
 				{
-					Debug.Log(action.name);
 					PinboardCore.TryCreateEntry(entryType);
 				});
 			}
@@ -299,16 +305,21 @@ namespace Pinboard
 
 					                                                  if (b)
 					                                                  {
-<<<<<<< HEAD
-						                                                  
-=======
-						                                                  PinboardCore.TryDeleteItem(
-							                                                  root.userData as BoardItem, currentBoard);
->>>>>>> 047928f343d04da7ef0e57f933426202c3142d18
+						                                                  PinboardCore.TryDeleteEntry(
+							                                                  root.userData as BoardEntry,
+							                                                  currentBoard);
 						                                                  Refresh();
 					                                                  }
 				                                                  })));
 
+			root.AddManipulator(new ClickActionsManipulator(() =>
+			{
+				
+			}, () =>
+			{
+				(root.userData as BoardEntry).OnDoubleClick();	
+			}));
+			
 			var img = new Image();
 			img.style.width = 15;
 			img.style.height = 15;

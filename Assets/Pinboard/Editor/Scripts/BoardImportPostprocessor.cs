@@ -8,7 +8,7 @@ namespace Pinboard
 		public static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets,
 		                                          string[] movedFromAssetPaths)
 		{
-			PinboardCore.Initialize();
+			//PinboardCore.Initialize();
 		}
 	}
 }

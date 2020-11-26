@@ -9,11 +9,11 @@ namespace Pinboard
 {
 	public class NotePopup : EditorWindow
 	{
-		public static bool ShowPopup(Action<string> onEditDone)
+		public static bool ShowPopup(string title, string initialValue, Action<string> onEditDone)
 		{
 			var window = ScriptableObject.CreateInstance<NotePopup>();
 
-			window.titleContent = new GUIContent("Create Note");
+			window.titleContent = new GUIContent(title);
 
 			var size = new Vector2(320, 80);
 			window.minSize = size;
@@ -21,7 +21,9 @@ namespace Pinboard
 
 			window.onEditDone = onEditDone;
 
-			window.ShowModal();
+			window.textField.value = initialValue;
+
+			window.ShowModal();			
 
 			return window.wasDone;
 		}
@@ -31,11 +33,22 @@ namespace Pinboard
 
 		private bool wasDone = false;
 
+		private TextField textField;
+
+
 		private void OnEnable()
 		{
 			var root = this.rootVisualElement;
 
+			root = new VisualElement();
+			root.style.flexGrow = 1f;
+			root.style.flexShrink = 0f;
+
+			rootVisualElement.Add(root);
+
 			root.style.paddingLeft = 8;
+			root.style.paddingTop = 8;
+			root.style.paddingBottom = 8;
 			root.style.paddingRight = 8;
 
 			var row = new VisualElement();
@@ -43,26 +56,29 @@ namespace Pinboard
 			row.style.justifyContent = Justify.Center;
 			row.style.alignContent = Align.Center;
 			row.style.alignItems = Align.Center;
+			row.style.marginBottom = 8;
 
-			var inputField = new TextField(256, true, false, '*');
-			row.Add(inputField);
+			textField = new TextField(256, true, false, '*');
+			textField.style.flexGrow = 1f;
+			textField.Q("unity-text-input").style.whiteSpace = WhiteSpace.Normal;
+			row.Add(textField);
 
 			var rowButton = new VisualElement();
 			rowButton.style.flexDirection = FlexDirection.Row;
-			rowButton.style.alignItems = Align.FlexEnd;
+			rowButton.style.alignItems = Align.Center;
+			rowButton.style.justifyContent = Justify.FlexEnd;
 
 			var button = new Button(() =>
 			{
 				wasDone = true;
-				onEditDone.Invoke(inputField.value.Trim());
+				onEditDone.Invoke(textField.value.Trim());
 				this.Close();
 			}) {text = "Done"};
 
-			button.SetEnabled(false);
 
 			rowButton.Add(button);
 
-			inputField.RegisterCallback<ChangeEvent<string>>(evt =>
+			textField.RegisterCallback<ChangeEvent<string>>(evt =>
 			{
 				var s = evt.newValue.Trim();
 				if (s.Length < 1)
@@ -74,8 +90,22 @@ namespace Pinboard
 				button.SetEnabled(true);
 			});
 
+			textField.RegisterCallback<AttachToPanelEvent>(evt => { textField.Q("unity-text-input").Focus(); });
+
 			root.Add(row);
 			root.Add(rowButton);
+
+			root.RegisterCallback<GeometryChangedEvent>(evt =>
+			{
+				var w = root.resolvedStyle.width;
+				var h = root.resolvedStyle.height;
+
+				var size = new Vector2(w, h);
+				this.minSize = size;
+				this.maxSize = size;
+				
+				button.SetEnabled(textField.value.Trim().Length >= 1);
+			});
 		}
 
 

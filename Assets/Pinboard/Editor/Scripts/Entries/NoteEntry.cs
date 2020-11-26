@@ -1,11 +1,17 @@
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Pinboard.Items
 {
 	[EntryType(visibleName = "Note")]
-	public class NoteEntry: BoardEntry
+	public class NoteEntry : BoardEntry
 	{
 		public string content;
+
+
+		private string popupTitle = "Update Note";
+
+		private bool isBeingEdited = false;
 
 		public NoteEntry()
 		{
@@ -41,15 +47,33 @@ namespace Pinboard.Items
 
 		public override bool Create()
 		{
+			popupTitle = "Create Note";
 			return EditOrUpdate();
 		}
 
 		public override bool EditOrUpdate()
 		{
-			return NotePopup.ShowPopup(s =>
+			if (isBeingEdited)
+				return false;
+
+			isBeingEdited = true;
+
+			var result = NotePopup.ShowPopup(popupTitle, this.content, s =>
 			{
+				popupTitle = "Update Note";
 				this.content = s;
 			});
+
+			isBeingEdited = false;
+
+			return result;
+		}
+
+		public override void OnDoubleClick()
+		{
+			base.OnDoubleClick();
+
+			this.EditOrUpdate();
 		}
 
 		public override bool IsValidForSearch(string[] filters)

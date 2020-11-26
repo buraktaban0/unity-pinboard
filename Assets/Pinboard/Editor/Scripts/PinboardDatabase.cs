@@ -44,15 +44,16 @@ namespace Pinboard
 
 			boards.Add(board);
 
+			onBoardAdded.Invoke(board);
+			
 			SaveBoards();
 
-			onBoardAdded.Invoke(board);
 		}
 
-		public static void DeleteItemFromBoard(BoardItem item, Board board)
+		public static void DeleteItemFromBoard(BoardEntry item, Board board)
 		{
 			board.Remove(item);
-			
+
 			SaveBoards();
 
 			if (board.accessibility == BoardAccessibility.ProjectPublic)
@@ -63,18 +64,18 @@ namespace Pinboard
 			{
 				DeleteIdFromEditorPrefs(item.id);
 			}
-			
+
 
 			AssetDatabase.SaveAssets();
 		}
 
 
-		private static void DeleteItemFromAssetDatabase(BoardItem item)
+		private static void DeleteItemFromAssetDatabase(BoardEntry item)
 		{
 			var boardItemContainers = LoadAssets<BoardItemJsonContainer>();
 
 			var container =
-				boardItemContainers.FirstOrDefault(c => new TypedJson(c.type, c.data).ToObject<BoardItem>().id ==
+				boardItemContainers.FirstOrDefault(c => new TypedJson(c.type, c.data).ToObject<BoardEntry>().id ==
 				                                        item.id);
 
 			if (container != null)
@@ -124,13 +125,8 @@ namespace Pinboard
 			var boardItemContainers = LoadAssets<BoardItemJsonContainer>();
 
 			boardItemContainers
-<<<<<<< HEAD
 				.Where(c => board.items.Any(i => i.id == new TypedJson(c.type, c.data).ToObject<BoardEntry>().id))
-				.ToList().ForEach(c => Object.DestroyImmediate(c, true));
-=======
-				.Where(c => board.items.Any(i => i.id == new TypedJson(c.type, c.data).ToObject<BoardItem>().id))
 				.ToList().ForEach(c => AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(c)));
->>>>>>> 047928f343d04da7ef0e57f933426202c3142d18
 		}
 
 
@@ -163,6 +159,8 @@ namespace Pinboard
 		{
 			boards = new List<Board>();
 
+			AssetDatabase.Refresh();
+			
 			LoadBoardsFromAssetDatabase();
 			LoadBoardsFromEditorPrefsWithContext("");
 			LoadBoardsFromEditorPrefsWithContext(PinboardCore.ProjectID);
@@ -258,7 +256,7 @@ namespace Pinboard
 			var containers =
 				guids.Select(
 					guid => AssetDatabase.LoadAssetAtPath<SerializedBoardContainer>(
-						AssetDatabase.GUIDToAssetPath(guid))).ToList();
+						AssetDatabase.GUIDToAssetPath(guid))).Where(c => c != null).ToList();
 
 			var serializedBoards = containers.Select(c => c.serializedBoard).ToList();
 			var boards = containers.Select(bc => new Board(bc.serializedBoard)).ToList();
@@ -331,9 +329,10 @@ namespace Pinboard
 			EditorPrefs.SetString(KEY_IDS, globalIDsJoined);
 			EditorPrefs.SetString($"{KEY_IDS}_{PinboardCore.ProjectID}", projectPrivateIDsJoined);
 
+			AssetDatabase.SaveAssets();
+			
 			onBoardsModified.Invoke();
 
-			AssetDatabase.SaveAssets();
 		}
 
 
@@ -363,7 +362,7 @@ namespace Pinboard
 				}
 
 				itemContainer.type = item.GetType().FullName;
-				itemContainer.data = JsonUtility.ToJson(item);
+				itemContainer.data = JsonUtility.ToJson(item, true);
 
 				EditorUtility.SetDirty(itemContainer);
 			}

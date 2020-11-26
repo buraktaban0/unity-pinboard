@@ -43,7 +43,7 @@ namespace Pinboard
 			items.Add(entry);
 		}
 
-		public void Remove(BoardItem item)
+		public void Remove(BoardEntry item)
 		{
 			items.Remove(item);
 		}
@@ -61,7 +61,10 @@ namespace Pinboard
 	public class SerializedBoard
 	{
 		public string id;
+		
+		[HideInInspector]
 		public BoardAccessibility accessibility;
+		
 		public string title;
 		public string createdBy;
 		public long createdAt;
