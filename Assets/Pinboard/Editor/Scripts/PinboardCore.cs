@@ -130,9 +130,7 @@ namespace Pinboard
 			board.title = options.title;
 			board.accessibility = options.accessibility;
 			board.items.Add(new NoteEntry("Fresh board!"));
-			board.items.Add(new NoteEntry("Fresh board2!"));
-			board.items.Add(new NoteEntry("Fresh board3!"));
-
+			
 			PinboardDatabase.AddBoard(board);
 			PinboardDatabase.SaveBoards();
 
