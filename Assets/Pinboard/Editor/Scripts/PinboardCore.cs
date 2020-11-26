@@ -129,9 +129,13 @@ namespace Pinboard
 			var board = new Board();
 			board.title = options.title;
 			board.accessibility = options.accessibility;
+<<<<<<< HEAD
 			board.items.Add(new NoteEntry("Fresh board!"));
 			board.items.Add(new NoteEntry("Fresh board2!"));
 			board.items.Add(new NoteEntry("Fresh board3!"));
+=======
+			board.items.Add(new SimpleTextItem("Fresh board!"));
+>>>>>>> 047928f343d04da7ef0e57f933426202c3142d18
 
 			PinboardDatabase.AddBoard(board);
 			PinboardDatabase.SaveBoards();
@@ -169,6 +173,15 @@ namespace Pinboard
 		public static void SetSelectedBoard(Board board)
 		{
 			selectedBoard = board;
+		}
+
+
+		public static void TryDeleteItem(BoardItem item, Board board)
+		{
+			if (board == null || item == null)
+				return;
+
+			PinboardDatabase.DeleteItemFromBoard(item, board);
 		}
 
 

@@ -299,7 +299,12 @@ namespace Pinboard
 
 					                                                  if (b)
 					                                                  {
+<<<<<<< HEAD
 						                                                  
+=======
+						                                                  PinboardCore.TryDeleteItem(
+							                                                  root.userData as BoardItem, currentBoard);
+>>>>>>> 047928f343d04da7ef0e57f933426202c3142d18
 						                                                  Refresh();
 					                                                  }
 				                                                  })));

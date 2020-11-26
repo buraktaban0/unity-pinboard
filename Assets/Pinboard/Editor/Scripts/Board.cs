@@ -43,6 +43,11 @@ namespace Pinboard
 			items.Add(entry);
 		}
 
+		public void Remove(BoardItem item)
+		{
+			items.Remove(item);
+		}
+
 		[MenuItem("Tools/TestMachineName")]
 		public static void Test()
 		{
