@@ -15,7 +15,7 @@ namespace Pinboard
 
 	public static class PinboardDatabase
 	{
-		private const string TOKEN_BREAK = ";BREAK;";
+		private const string TOKEN_BREAK = ";";
 		private const string KEY_IDS = "PINBOARD_BOARD_IDS";
 
 		private const string KEY_ID = "PINBOARD_BOARD";
@@ -47,6 +47,40 @@ namespace Pinboard
 			SaveBoards();
 
 			onBoardAdded.Invoke(board);
+		}
+
+		public static void DeleteItemFromBoard(BoardItem item, Board board)
+		{
+			board.Remove(item);
+			
+			SaveBoards();
+
+			if (board.accessibility == BoardAccessibility.ProjectPublic)
+			{
+				DeleteItemFromAssetDatabase(item);
+			}
+			else
+			{
+				DeleteIdFromEditorPrefs(item.id);
+			}
+			
+
+			AssetDatabase.SaveAssets();
+		}
+
+
+		private static void DeleteItemFromAssetDatabase(BoardItem item)
+		{
+			var boardItemContainers = LoadAssets<BoardItemJsonContainer>();
+
+			var container =
+				boardItemContainers.FirstOrDefault(c => new TypedJson(c.type, c.data).ToObject<BoardItem>().id ==
+				                                        item.id);
+
+			if (container != null)
+			{
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(container));
+			}
 		}
 
 		public static void DeleteBoard(Board board)
@@ -85,14 +119,13 @@ namespace Pinboard
 			if (cont != null)
 			{
 				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(cont));
-				Debug.Log("Deleted asset");
 			}
 
 			var boardItemContainers = LoadAssets<BoardItemJsonContainer>();
 
 			boardItemContainers
 				.Where(c => board.items.Any(i => i.id == new TypedJson(c.type, c.data).ToObject<BoardItem>().id))
-				.ToList().ForEach(c => Object.DestroyImmediate(c, true));
+				.ToList().ForEach(c => AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(c)));
 		}
 
 

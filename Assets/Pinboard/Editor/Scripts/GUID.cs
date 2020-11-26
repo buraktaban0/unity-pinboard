@@ -19,13 +19,13 @@ namespace Pinboard
 		{
 			return System.Guid.NewGuid().ToString().Replace("-", "");
 
-			int len = CHARS.Length;
-			for (int i = 0; i < UID_LENGTH; i++)
-			{
-				buffer[i] = CHARS[RAND.Next(0, len)];
-			}
-
-			return new string(buffer);
+			// int len = CHARS.Length;
+			// for (int i = 0; i < UID_LENGTH; i++)
+			// {
+			// 	buffer[i] = CHARS[RAND.Next(0, len)];
+			// }
+			//
+			// return new string(buffer);
 		}
 	}
 }

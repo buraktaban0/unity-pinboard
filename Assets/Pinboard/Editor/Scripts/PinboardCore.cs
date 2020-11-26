@@ -93,7 +93,7 @@ namespace Pinboard
 				{
 					Directory.CreateDirectory(dir);
 				}
-				
+
 				PinboardDatabase.CreateAsset(_config, PATH_CFG);
 				AssetDatabase.SaveAssets();
 			}
@@ -106,13 +106,20 @@ namespace Pinboard
 			board.title = options.title;
 			board.accessibility = options.accessibility;
 			board.items.Add(new SimpleTextItem("Fresh board!"));
-			board.items.Add(new SimpleTextItem("Fresh board2!"));
-			board.items.Add(new SimpleTextItem("Fresh board3!"));
-			
+
 			PinboardDatabase.AddBoard(board);
 			PinboardDatabase.SaveBoards();
 
 			return board;
+		}
+
+
+		public static void TryDeleteItem(BoardItem item, Board board)
+		{
+			if (board == null || item == null)
+				return;
+
+			PinboardDatabase.DeleteItemFromBoard(item, board);
 		}
 
 

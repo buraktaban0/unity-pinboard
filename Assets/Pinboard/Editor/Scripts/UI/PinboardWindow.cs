@@ -271,8 +271,8 @@ namespace Pinboard
 
 					                                                  if (b)
 					                                                  {
-						                                                  currentBoard.items.Remove(
-							                                                  root.userData as BoardItem);
+						                                                  PinboardCore.TryDeleteItem(
+							                                                  root.userData as BoardItem, currentBoard);
 						                                                  Refresh();
 					                                                  }
 				                                                  })));

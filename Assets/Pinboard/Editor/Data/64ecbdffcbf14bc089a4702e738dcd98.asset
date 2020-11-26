@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf943bf5826843ee9bfb988687f5877d, type: 3}
-  m_Name: 98ec40214a414cfe885701fc61b595dc
+  m_Name: 64ecbdffcbf14bc089a4702e738dcd98
   m_EditorClassIdentifier: 
   serializedBoard:
-    id: 98ec40214a414cfe885701fc61b595dc
+    id: 64ecbdffcbf14bc089a4702e738dcd98
     accessibility: 3
-    title: qwe
+    title: fgfggfg
     createdBy: Burak Taban
-    createdAt: 1606345665
+    createdAt: 1606394699
     itemIds:
-    - c8615c0341f747109e434ae96231e430
+    - c82116d9db204a4c9cbbd35d9467bbb9
