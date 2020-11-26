@@ -23,7 +23,7 @@ namespace Pinboard
 
 		public DateTime CreationTime => Utility.FromUnixToLocal(createdAt);
 
-		public List<BoardItem> items = new List<BoardItem>();
+		public List<BoardEntry> items = new List<BoardEntry>();
 
 		public Board()
 		{
@@ -38,9 +38,9 @@ namespace Pinboard
 			createdAt = serializedBoard.createdAt;
 		}
 
-		public void Add(BoardItem item)
+		public void Add(BoardEntry entry)
 		{
-			items.Add(item);
+			items.Add(entry);
 		}
 
 		[MenuItem("Tools/TestMachineName")]

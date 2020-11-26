@@ -2,11 +2,17 @@ using UnityEngine.UIElements;
 
 namespace Pinboard.Items
 {
-	public class SimpleTextItem : BoardItem
+	[EntryType(visibleName = "Note")]
+	public class NoteEntry: BoardEntry
 	{
 		public string content;
 
-		public SimpleTextItem(string content)
+		public NoteEntry()
+		{
+			content = "Empty note";
+		}
+
+		public NoteEntry(string content)
 		{
 			this.content = content;
 		}
@@ -31,6 +37,19 @@ namespace Pinboard.Items
 			{
 				el.Remove(lbl);
 			}
+		}
+
+		public override bool Create()
+		{
+			return EditOrUpdate();
+		}
+
+		public override bool EditOrUpdate()
+		{
+			return NotePopup.ShowPopup(s =>
+			{
+				this.content = s;
+			});
 		}
 
 		public override bool IsValidForSearch(string[] filters)

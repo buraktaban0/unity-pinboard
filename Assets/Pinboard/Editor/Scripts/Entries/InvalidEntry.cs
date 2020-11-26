@@ -2,7 +2,7 @@
 
 namespace Pinboard.Items
 {
-	public class InvalidItem : BoardItem
+	public class InvalidEntry : BoardEntry
 	{
 		public override void BindVisualElement(VisualElement el)
 		{
@@ -12,6 +12,16 @@ namespace Pinboard.Items
 		public override void UnbindVisualElement(VisualElement el)
 		{
 			
+		}
+
+		public override bool Create()
+		{
+			return false;
+		}
+
+		public override bool EditOrUpdate()
+		{
+			return false;
 		}
 	}
 }

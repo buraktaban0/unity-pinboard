@@ -31,9 +31,9 @@ namespace Pinboard
 			window.minSize = new Vector2(250, 100);
 			window.titleContent = new GUIContent("Pinboard");
 
-			window.Refresh();
-
 			Instance = window;
+
+			window.Show();
 		}
 
 
@@ -46,10 +46,11 @@ namespace Pinboard
 
 		private Toolbar boardToolbar;
 		private Label boardNameLabel;
+		private ToolbarMenu addMenu;
 
 		private ListView itemsList;
 
-		private List<BoardItem> visibleItems;
+		private List<BoardEntry> visibleItems;
 
 
 		private void OnEnable()
@@ -74,6 +75,8 @@ namespace Pinboard
 
 			PinboardDatabase.onBoardAdded += OnBoardAdded;
 			PinboardDatabase.onBoardDeleted += OnBoardDeleted;
+
+			this.Refresh();
 		}
 
 
@@ -194,7 +197,30 @@ namespace Pinboard
 
 			boardNameLabel = new Label("");
 			boardNameLabel.style.marginLeft = 4;
-			toolbar.Add(boardNameLabel);
+			//toolbar.Add(boardNameLabel);
+
+			addMenu = new ToolbarMenu();
+			addMenu.Q<TextElement>().RemoveFromHierarchy();
+
+			var addIcon = new Image();
+			addIcon.style.width = 10;
+			addIcon.style.height = 10;
+			addIcon.image = PinboardResources.ICON_ADD;
+			addMenu.Insert(0, addIcon);
+			addMenu.style.alignItems = Align.Center;
+
+			for (var i = 0; i < PinboardCore.EntryTypes.Count; i++)
+			{
+				var entryType = PinboardCore.EntryTypes[i];
+				var entryName = PinboardCore.EntryTypeNames[i];
+				addMenu.menu.AppendAction(entryName, action =>
+				{
+					Debug.Log(action.name);
+					PinboardCore.TryCreateEntry(entryType);
+				});
+			}
+
+			toolbar.Add(addMenu);
 
 			rootVisualElement.Insert(1, toolbar);
 		}
@@ -205,6 +231,7 @@ namespace Pinboard
 			{
 				boardNameLabel.text = "";
 				boardToolbar.tooltip = "";
+				addMenu.SetEnabled(false);
 			}
 			else
 			{
@@ -213,6 +240,7 @@ namespace Pinboard
 				                       $"\nCreated by: {currentBoard.createdBy}" +
 				                       $"\nCreation date: {currentBoard.CreationTime.ToShortDateString()}, {currentBoard.CreationTime.ToShortTimeString()}"
 					/*+ $"\nUnique ID: {currentBoard.id}"*/;
+				addMenu.SetEnabled(true);
 			}
 		}
 
@@ -271,8 +299,7 @@ namespace Pinboard
 
 					                                                  if (b)
 					                                                  {
-						                                                  currentBoard.items.Remove(
-							                                                  root.userData as BoardItem);
+						                                                  
 						                                                  Refresh();
 					                                                  }
 				                                                  })));
@@ -348,7 +375,7 @@ namespace Pinboard
 			if (board == null)
 			{
 				PinboardPrefs.LastOpenBoardID = string.Empty;
-				itemsList.itemsSource = new List<BoardItem>();
+				itemsList.itemsSource = new List<BoardEntry>();
 			}
 			else
 			{
@@ -356,6 +383,8 @@ namespace Pinboard
 				visibleItems = board.items;
 				itemsList.itemsSource = board.items;
 			}
+
+			PinboardCore.SetSelectedBoard(board);
 
 			UpdateBoardToolbar();
 

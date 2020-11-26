@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 namespace Pinboard
 {
 	[System.Serializable]
-	public abstract class BoardItem
+	public abstract class BoardEntry
 	{
 		
 		public string id = Guid.Get();
@@ -19,6 +19,10 @@ namespace Pinboard
 		public abstract void BindVisualElement(VisualElement el);
 
 		public abstract void UnbindVisualElement(VisualElement el);
+
+		public abstract bool Create();
+
+		public abstract bool EditOrUpdate();
 		
 		public virtual void OnClick()
 		{

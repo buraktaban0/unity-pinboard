@@ -11,6 +11,7 @@ namespace Pinboard
 		public static readonly Texture ICON_PREFAB;
 		public static readonly Texture ICON_VIEW;
 		public static readonly Texture ICON_IMAGE;
+		public static readonly Texture ICON_ADD;
 
 		static PinboardResources()
 		{
@@ -21,6 +22,7 @@ namespace Pinboard
 			ICON_PREFAB = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/prefab.png");
 			ICON_VIEW = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/view.png");
 			ICON_IMAGE = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/image.png");
+			ICON_ADD = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/add.png");
 		}
 	}
 }

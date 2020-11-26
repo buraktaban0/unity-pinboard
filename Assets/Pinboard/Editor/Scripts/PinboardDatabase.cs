@@ -91,7 +91,7 @@ namespace Pinboard
 			var boardItemContainers = LoadAssets<BoardItemJsonContainer>();
 
 			boardItemContainers
-				.Where(c => board.items.Any(i => i.id == new TypedJson(c.type, c.data).ToObject<BoardItem>().id))
+				.Where(c => board.items.Any(i => i.id == new TypedJson(c.type, c.data).ToObject<BoardEntry>().id))
 				.ToList().ForEach(c => Object.DestroyImmediate(c, true));
 		}
 
@@ -186,7 +186,7 @@ namespace Pinboard
 			return board;
 		}
 
-		private static BoardItem LoadItemFromEditorPrefs(string id)
+		private static BoardEntry LoadItemFromEditorPrefs(string id)
 		{
 			var key = $"{KEY_ID}_{id}";
 
@@ -198,7 +198,7 @@ namespace Pinboard
 			}
 
 			var typedJson = JsonUtility.FromJson<TypedJson>(typedJsonContent);
-			var item = typedJson.ToObject<BoardItem>();
+			var item = typedJson.ToObject<BoardEntry>();
 			return item;
 		}
 
@@ -232,10 +232,10 @@ namespace Pinboard
 				                     guid => AssetDatabase.LoadAssetAtPath<BoardItemJsonContainer>(
 					                     AssetDatabase.GUIDToAssetPath(guid))).ToList();
 
-			var items = itemContainers.Select(ic =>
+			var items = itemContainers.Where(item => item != null).Select(ic =>
 			{
 				var typedJson = new TypedJson(ic.type, ic.data);
-				var item = typedJson.ToObject<BoardItem>();
+				var item = typedJson.ToObject<BoardEntry>();
 				return item;
 			}).ToList();
 
@@ -348,10 +348,10 @@ namespace Pinboard
 		}
 
 
-		private static void SaveBoardItemToEditorPrefs(BoardItem item)
+		private static void SaveBoardItemToEditorPrefs(BoardEntry entry)
 		{
-			var key = $"{KEY_ID}_{item.id}";
-			var val = JsonUtility.ToJson(TypedJson.Create(item));
+			var key = $"{KEY_ID}_{entry.id}";
+			var val = JsonUtility.ToJson(TypedJson.Create(entry));
 			EditorPrefs.SetString(key, val);
 		}
 

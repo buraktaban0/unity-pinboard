@@ -11,7 +11,7 @@ Toolbar {
 }
 
 .board-toolbar {
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .board-toolbar:hover {
