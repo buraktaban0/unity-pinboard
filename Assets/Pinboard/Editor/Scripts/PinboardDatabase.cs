@@ -14,6 +14,7 @@ namespace Pinboard
 
 	public delegate void PinboardBoardEvent(Board board);
 
+	[InitializeOnLoad]
 	public class PinboardDatabase : ScriptableObject, ISerializationCallbackReceiver
 	{
 		private const string TOKEN_BREAK = ";";
@@ -28,11 +29,40 @@ namespace Pinboard
 			{
 				if (_current == null)
 				{
-					_current = ScriptableObject.CreateInstance<PinboardDatabase>();
+					var databases = Resources.FindObjectsOfTypeAll<PinboardDatabase>().ToList();
+					for (int i = databases.Count - 1; i >= 1; i--)
+					{
+						if (databases[i] == null)
+							continue;
+
+						DestroyImmediate(databases[i]);
+
+						databases.RemoveAt(i);
+					}
+
+					if (databases.Count > 0)
+					{
+						_current = databases.First();
+					}
+					else
+					{
+						_current = ScriptableObject.CreateInstance<PinboardDatabase>();
+					}
 				}
 
 				return _current;
 			}
+		}
+
+		static PinboardDatabase()
+		{
+			AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
+		}
+
+		private static void OnBeforeAssemblyReload()
+		{
+			//Debug.Log("OnBeforeAssemblyReload ");
+			Current.Save();
 		}
 
 		public PinboardBoardEvent onBoardAdded = delegate { };
@@ -46,32 +76,63 @@ namespace Pinboard
 		private Dictionary<string, Entry> entriesById;
 
 		[SerializeField]
-		private List<Board> boards;
+		private List<Board> boards = new List<Board>();
 
 		public ReadOnlyCollection<Board> Boards => boards.AsReadOnly();
 
 		public int BoardCount => boards.Count;
 
+		private bool shouldSaveOnEditorUpdate = false;
+
+		private void OnEnable()
+		{
+			if (Current != this && null != this)
+			{
+				DestroyImmediate(this);
+				return;
+			}
+
+			EditorApplication.update += EditorUpdate;
+		}
+
+		private void OnDisable()
+		{
+			EditorApplication.update -= EditorUpdate;
+		}
+
+		private void EditorUpdate()
+		{
+			if (shouldSaveOnEditorUpdate)
+			{
+				//Save();
+				shouldSaveOnEditorUpdate = false;
+			}
+		}
+
 		public void OnBeforeSerialize()
 		{
-			Debug.Log("Before database serialize");
 		}
 
 		public void OnAfterDeserialize()
 		{
-			Debug.Log("After database serialize");
-			Save();
+			//Save();
+
+			shouldSaveOnEditorUpdate = true;
 		}
 
 
 		public void WillModifyEntry(Entry entry)
 		{
 			Undo.RegisterCompleteObjectUndo(this, $"Modify Entry '{entry.ShortVisibleName}'");
+			shouldSaveOnEditorUpdate = true;
+			//EditorApplication.QueuePlayerLoopUpdate();
 		}
 
 		public void WillModifyBoard(Board board)
 		{
 			Undo.RegisterCompleteObjectUndo(this, $"Modify Board '{board.title}'");
+			shouldSaveOnEditorUpdate = true;
+			//EditorApplication.QueuePlayerLoopUpdate();
 		}
 
 		public bool HasBoard(string id)

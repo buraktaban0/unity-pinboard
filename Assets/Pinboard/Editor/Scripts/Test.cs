@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Pinboard.Items;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,7 +17,7 @@ namespace Pinboard
 	public class B
 	{
 		public string s = "testString";
-		public int x = 9;
+		public int x = 7;
 	}
 
 	public class Test : ScriptableObject, ISerializationCallbackReceiver
@@ -24,18 +26,33 @@ namespace Pinboard
 
 		public void OnBeforeSerialize()
 		{
-			Debug.Log("before ser");
-			TestPrint();
+			//TestPrint();
 		}
 
 		public void OnAfterDeserialize()
 		{
-			Debug.Log("after ser");
-			TestPrint();
+			//TestPrint();
 		}
+
 
 		private static Test obj;
 
+		
+		[MenuItem("Test/loop")]
+		public static void TestLoop()
+		{
+			Debug.Log("before");
+			
+			PinboardDatabase.Current.WillModifyEntry(new NoteEntry("This is my content"));
+			
+			NotePopup.ShowPopup("asd", "qwe", s =>
+			{
+				Debug.Log("done");
+			});
+			Debug.Log("after");
+		}
+
+		
 		[MenuItem("Test/A")]
 		public static void TestA()
 		{

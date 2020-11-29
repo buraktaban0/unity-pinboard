@@ -61,12 +61,17 @@ namespace Pinboard.Items
 
 			isBeingEdited = true;
 
+			PinboardDatabase.Current.WillModifyEntry(this);
+
 			var wasEdited = NotePopup.ShowPopup(popupTitle, this.content, s =>
 			{
 				popupTitle = "Update Note";
 				this.content = s;
 			});
 			isBeingEdited = false;
+
+			if (wasEdited)
+				IsDirty = true;
 
 			return wasEdited;
 		}
