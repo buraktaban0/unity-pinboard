@@ -69,13 +69,13 @@ namespace Pinboard
 
 			AddBoardToolbar();
 
-			visibleItems = currentBoard?.items;
+			visibleItems = currentBoard?.entries;
 
 			MakeScrollList();
 
-			PinboardDatabase.onBoardAdded += OnBoardAdded;
-			PinboardDatabase.onBoardDeleted += OnBoardDeleted;
-			PinboardDatabase.onBoardsModified += OnBoardsModified;
+			PinboardDatabase.Current.onBoardAdded += OnBoardAdded;
+			PinboardDatabase.Current.onBoardDeleted += OnBoardDeleted;
+			PinboardDatabase.Current.onDatabaseModified += OnBoardsModified;
 
 			this.Refresh();
 		}
@@ -83,9 +83,9 @@ namespace Pinboard
 
 		private void OnDisable()
 		{
-			PinboardDatabase.onBoardAdded -= OnBoardAdded;
-			PinboardDatabase.onBoardDeleted -= OnBoardDeleted;
-			PinboardDatabase.onBoardsModified -= OnBoardsModified;
+			PinboardDatabase.Current.onBoardAdded -= OnBoardAdded;
+			PinboardDatabase.Current.onBoardDeleted -= OnBoardDeleted;
+			PinboardDatabase.Current.onDatabaseModified -= OnBoardsModified;
 		}
 
 		private void OnBoardsModified()
@@ -149,9 +149,9 @@ namespace Pinboard
 
 			boardsDropdown.menu.MenuItems().Clear();
 
-			for (int i = 0; i < PinboardDatabase.boards.Count; i++)
+			for (int i = 0; i < PinboardDatabase.Current.BoardCount; i++)
 			{
-				var board = PinboardDatabase.boards[i];
+				var board = PinboardDatabase.Current.Boards[i];
 				boardsDropdown.menu.AppendAction(board.title, action =>
 				                                 {
 					                                 if (action.name == board.title)
@@ -192,7 +192,7 @@ namespace Pinboard
 
 					if (delete)
 					{
-						PinboardDatabase.DeleteBoard(currentBoard);
+						PinboardDatabase.Current.DeleteBoard(currentBoard);
 					}
 				});
 				pop.menu.AppendAction("Log1", action => { Debug.Log(action.name); });
@@ -220,10 +220,7 @@ namespace Pinboard
 			{
 				var entryType = PinboardCore.EntryTypes[i];
 				var entryName = PinboardCore.EntryTypeNames[i];
-				addMenu.menu.AppendAction(entryName, action =>
-				{
-					PinboardCore.TryCreateEntry(entryType);
-				});
+				addMenu.menu.AppendAction(entryName, action => { PinboardCore.TryCreateEntry(entryType); });
 			}
 
 			toolbar.Add(addMenu);
@@ -260,12 +257,12 @@ namespace Pinboard
 
 			if (string.IsNullOrEmpty(str))
 			{
-				visibleItems = currentBoard.items;
+				visibleItems = currentBoard.entries;
 			}
 			else
 			{
 				var filters = new string[] {str.ToLower()};
-				visibleItems = currentBoard.items.Where(item => item.IsValidForSearch(filters)).ToList();
+				visibleItems = currentBoard.entries.Where(item => item.IsValidForSearch(filters)).ToList();
 			}
 
 			itemsList.itemsSource = visibleItems;
@@ -312,14 +309,9 @@ namespace Pinboard
 					                                                  }
 				                                                  })));
 
-			root.AddManipulator(new ClickActionsManipulator(() =>
-			{
-				
-			}, () =>
-			{
-				(root.userData as BoardEntry).OnDoubleClick();	
-			}));
-			
+			root.AddManipulator(new ClickActionsManipulator(() => { },
+			                                                () => { (root.userData as BoardEntry).OnDoubleClick(); }));
+
 			var img = new Image();
 			img.style.width = 15;
 			img.style.height = 15;
@@ -352,14 +344,14 @@ namespace Pinboard
 
 		public void Refresh()
 		{
-			if (PinboardDatabase.boards.Count < 1)
+			if (PinboardDatabase.Current.BoardCount < 1)
 			{
 				SetBoard(null);
 				return;
 			}
 
 			var lastOpenId = PinboardPrefs.LastOpenBoardID;
-			Board firstBoard = PinboardDatabase.boards.FirstOrDefault();
+			Board firstBoard = PinboardDatabase.Current.Boards.FirstOrDefault();
 			if (string.IsNullOrEmpty(lastOpenId))
 			{
 				if (firstBoard == null)
@@ -372,7 +364,7 @@ namespace Pinboard
 			}
 			else
 			{
-				var lastOpenBoard = PinboardDatabase.GetBoard(lastOpenId);
+				var lastOpenBoard = PinboardDatabase.Current.GetBoard(lastOpenId);
 				if (lastOpenBoard == null)
 				{
 					SetBoard(null);
@@ -396,8 +388,8 @@ namespace Pinboard
 			else
 			{
 				PinboardPrefs.LastOpenBoardID = board.id;
-				visibleItems = board.items;
-				itemsList.itemsSource = board.items;
+				visibleItems = board.entries;
+				itemsList.itemsSource = board.entries;
 			}
 
 			PinboardCore.SetSelectedBoard(board);

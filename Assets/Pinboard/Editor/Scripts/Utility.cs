@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -118,5 +119,22 @@ namespace Pinboard
 				parent = parent + "/" + segments[i];
 			}
 		}
+		
+		public static List<T> LoadAssets<T>() where T : UnityEngine.Object
+		{
+			var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
+
+			if (guids == null || guids.Length < 1)
+				return new List<T>();
+
+			var assets =
+				guids.Select(
+					guid => AssetDatabase.LoadAssetAtPath<T>(
+						AssetDatabase.GUIDToAssetPath(guid))).ToList();
+
+			return assets;
+		}
+
+		
 	}
 }

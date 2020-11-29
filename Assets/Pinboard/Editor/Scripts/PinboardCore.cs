@@ -87,7 +87,7 @@ namespace Pinboard
 
 			InitializeTypes();
 
-			PinboardDatabase.LoadBoards();
+			//PinboardDatabase.LoadBoards();
 
 			PinboardWindow.Instance?.Refresh();
 		}
@@ -129,10 +129,10 @@ namespace Pinboard
 			var board = new Board();
 			board.title = options.title;
 			board.accessibility = options.accessibility;
-			board.items.Add(new NoteEntry("Fresh board!"));
+			board.entries.Add(new NoteEntry("Fresh board!"));
 			
-			PinboardDatabase.AddBoard(board);
-			PinboardDatabase.SaveBoards();
+			//PinboardDatabase.AddBoard(board);
+			//PinboardDatabase.SaveBoards();
 
 			return board;
 		}
@@ -161,7 +161,7 @@ namespace Pinboard
 
 			selectedBoard.Add(entry);
 
-			PinboardDatabase.SaveBoards();
+			//PinboardDatabase.SaveBoards();
 		}
 
 		public static void TryDeleteEntry(BoardEntry item, Board board)
@@ -169,7 +169,7 @@ namespace Pinboard
 			if (board == null || item == null)
 				return;
 
-			PinboardDatabase.DeleteItemFromBoard(item, board);
+			//PinboardDatabase.DeleteItemFromBoard(item, board);
 		}
 
 
@@ -183,7 +183,7 @@ namespace Pinboard
 		public static void ClearAllBoards()
 		{
 			PinboardCore.Initialize();
-			PinboardDatabase.boards.ToList().ForEach(PinboardDatabase.DeleteBoard);
+			//PinboardDatabase.boards.ToList().ForEach(PinboardDatabase.DeleteBoard);
 			PinboardWindow.Instance?.Refresh();
 		}
 	}

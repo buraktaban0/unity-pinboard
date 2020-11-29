@@ -25,7 +25,7 @@ namespace Pinboard
 		public DateTime CreationTime => Utility.FromUnixToLocal(createdAt);
 
 		[SerializeReference]
-		public List<BoardEntry> items = new List<BoardEntry>();
+		public List<BoardEntry> entries = new List<BoardEntry>();
 
 		public Board()
 		{
@@ -42,12 +42,12 @@ namespace Pinboard
 
 		public void Add(BoardEntry entry)
 		{
-			items.Add(entry);
+			entries.Add(entry);
 		}
 
 		public void Remove(BoardEntry item)
 		{
-			items.Remove(item);
+			entries.Remove(item);
 		}
 
 		[MenuItem("Tools/TestMachineName")]
@@ -71,7 +71,7 @@ namespace Pinboard
 		public string createdBy;
 		public long createdAt;
 
-		public string[] itemIds;
+		public string[] entryIds;
 
 		public SerializedBoard(Board board)
 		{
@@ -80,7 +80,7 @@ namespace Pinboard
 			title = board.title;
 			createdBy = board.createdBy;
 			createdAt = board.createdAt;
-			itemIds = board.items.Select(item => item.id).ToArray();
+			entryIds = board.entries.Select(item => item.id).ToArray();
 		}
 	}
 }

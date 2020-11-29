@@ -75,7 +75,7 @@ namespace Pinboard.Items
 
 			if (this.EditOrUpdate())
 			{
-				PinboardDatabase.SaveBoards();
+				//PinboardDatabase.SaveBoards();
 			}
 		}
 

@@ -2,7 +2,7 @@
 
 namespace Pinboard
 {
-	public class BoardItemJsonContainer : ScriptableObject
+	public class BoardEntryJsonContainer : ScriptableObject
 	{
 		public string type;
 		

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Pinboard.Items;
@@ -13,406 +14,243 @@ namespace Pinboard
 
 	public delegate void PinboardBoardEvent(Board board);
 
-	public class PinboardDatabase : ScriptableObject
+	public class PinboardDatabase : ScriptableObject, ISerializationCallbackReceiver
 	{
-
-		public List<Board> undoBoards;
-		
 		private const string TOKEN_BREAK = ";";
 		private const string KEY_IDS = "PINBOARD_BOARD_IDS";
-
 		private const string KEY_ID = "PINBOARD_BOARD";
 
-		public static PinboardDatabase Current;
-		
-		public static string DIR_PINBOARD_ROOT => Application.dataPath + "/Pinboard/";
+		private static PinboardDatabase _current;
 
-		public static string DIR_BOARDS = DIR_PINBOARD_ROOT + "Boards/";
-
-		public static PinboardBoardEvent onBoardAdded = delegate { };
-		public static PinboardBoardEvent onBoardDeleted = delegate { };
-		public static PinboardEvent onBoardsModified = delegate { };
-
-		public static List<Board> boards = new List<Board>(32);
-
-		public static Board GetBoard(string id)
+		public static PinboardDatabase Current
 		{
-			return boards.FirstOrDefault(board => board.id == id);
-		}
-
-		public static void AddBoard(Board board)
-		{
-			if (boards.Contains(board))
+			get
 			{
-				Debug.LogWarning("Pinboard tried to add a board to the database that already exists");
-				return;
-			}
-
-			boards.Add(board);
-
-			onBoardAdded.Invoke(board);
-			
-			SaveBoards();
-
-		}
-
-		public static void DeleteItemFromBoard(BoardEntry item, Board board)
-		{
-			board.Remove(item);
-
-			SaveBoards();
-
-			if (board.accessibility == BoardAccessibility.ProjectPublic)
-			{
-				DeleteItemFromAssetDatabase(item);
-			}
-			else
-			{
-				DeleteIdFromEditorPrefs(item.id);
-			}
-
-			AssetDatabase.SaveAssets();
-		}
-
-
-		private static void DeleteItemFromAssetDatabase(BoardEntry item)
-		{
-			var boardItemContainers = LoadAssets<BoardItemJsonContainer>();
-
-			var container =
-				boardItemContainers.FirstOrDefault(c => new TypedJson(c.type, c.data).ToObject<BoardEntry>().id ==
-				                                        item.id);
-
-			if (container != null)
-			{
-				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(container));
-			}
-		}
-
-		public static void DeleteBoard(Board board)
-		{
-			if (boards.Contains(board) == false)
-			{
-				Debug.LogWarning("Pinboard tried to delete a board that does not exist in the database");
-				return;
-			}
-
-			boards.Remove(board);
-
-			if (board.accessibility == BoardAccessibility.ProjectPublic)
-			{
-				DeleteBoardFromAssetDatabase(board);
-			}
-			else
-			{
-				DeleteBoardFromEditorPrefsWithContext(board, board.accessibility == BoardAccessibility.Global
-					                                      ? ""
-					                                      : PinboardCore.ProjectID);
-			}
-
-			AssetDatabase.SaveAssets();
-
-			onBoardDeleted.Invoke(board);
-
-			board = null;
-		}
-
-		private static void DeleteBoardFromAssetDatabase(Board board)
-		{
-			var serializedBoardContainers = LoadAssets<SerializedBoardContainer>();
-
-			var cont = serializedBoardContainers.FirstOrDefault(c => c.serializedBoard.id == board.id);
-			if (cont != null)
-			{
-				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(cont));
-			}
-
-			var boardItemContainers = LoadAssets<BoardItemJsonContainer>();
-
-			boardItemContainers
-				.Where(c => board.items.Any(i => i.id == new TypedJson(c.type, c.data).ToObject<BoardEntry>().id))
-				.ToList().ForEach(c => AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(c)));
-		}
-
-
-		private static void DeleteBoardFromEditorPrefsWithContext(Board board, string ctx)
-		{
-			string keyIDs = KEY_IDS;
-			if (string.IsNullOrEmpty(ctx) == false)
-			{
-				keyIDs += $"_{ctx}";
-			}
-
-			var ids = EditorPrefs.GetString(keyIDs, "");
-
-			if (string.IsNullOrEmpty(ids))
-				return;
-
-			var idsSplit = ids.Split(new string[] {TOKEN_BREAK}, StringSplitOptions.None).ToList();
-
-			if (idsSplit.Contains(board.id))
-				idsSplit.Remove(board.id);
-
-			var joinedIds = string.Join(TOKEN_BREAK, idsSplit);
-			EditorPrefs.SetString(keyIDs, joinedIds);
-
-			board.items.Select(item => item.id).ToList().ForEach(DeleteIdFromEditorPrefs);
-			DeleteIdFromEditorPrefs(board.id);
-		}
-
-		public static void LoadBoards()
-		{
-			boards = new List<Board>();
-
-			AssetDatabase.Refresh();
-			
-			LoadBoardsFromAssetDatabase();
-			LoadBoardsFromEditorPrefsWithContext("");
-			LoadBoardsFromEditorPrefsWithContext(PinboardCore.ProjectID);
-		}
-
-		private static void LoadBoardsFromEditorPrefsWithContext(string ctx)
-		{
-			string keyIDs = KEY_IDS;
-			if (string.IsNullOrEmpty(ctx) == false)
-			{
-				keyIDs += $"_{ctx}";
-			}
-
-			var ids = EditorPrefs.GetString(keyIDs, "");
-
-			if (string.IsNullOrEmpty(ids))
-				return;
-
-			var idsSplit = ids.Split(new string[] {TOKEN_BREAK}, StringSplitOptions.None);
-
-			foreach (var id in idsSplit)
-			{
-				var board = LoadBoardFromPrefs(id);
-				if (board == null)
-					continue;
-
-				boards.Add(board);
-			}
-		}
-
-
-		private static Board LoadBoardFromPrefs(string id)
-		{
-			var key = $"{KEY_ID}_{id}";
-			var boardJson = EditorPrefs.GetString(key, "");
-
-			if (string.IsNullOrEmpty(boardJson))
-			{
-				Debug.Log("Board was missing from EditorPrefs. - " + id);
-				return null;
-			}
-
-			var serializedBoard = JsonUtility.FromJson<SerializedBoard>(boardJson);
-			var board = new Board(serializedBoard);
-
-			foreach (var itemId in serializedBoard.itemIds)
-			{
-				var item = LoadItemFromEditorPrefs(itemId);
-
-				if (item == null)
+				if (_current == null)
 				{
-					Debug.Log("Item was missing from EditorPrefs. - " + id);
-					continue;
+					_current = ScriptableObject.CreateInstance<PinboardDatabase>();
 				}
 
-				board.items.Add(item);
-				item.board = board;
+				return _current;
 			}
+		}
+
+		public PinboardBoardEvent onBoardAdded = delegate { };
+		public PinboardBoardEvent onBoardDeleted = delegate { };
+		public PinboardEvent onDatabaseModified = delegate { };
+
+		private Dictionary<string, SerializedBoardContainer> serializedBoardContainers;
+		private Dictionary<string, BoardEntryJsonContainer> boardEntryContainers;
+
+		private Dictionary<string, Board> boardsById;
+		private Dictionary<string, BoardEntry> entriesById;
+
+		[SerializeField]
+		private List<Board> boards;
+
+		public ReadOnlyCollection<Board> Boards => boards.AsReadOnly();
+
+		public int BoardCount => boards.Count;
+
+		public void OnBeforeSerialize()
+		{
+			Debug.Log("Before database serialize");
+		}
+
+		public void OnAfterDeserialize()
+		{
+			Debug.Log("After database serialize");
+			SaveAll();
+		}
+
+		public bool HasBoard(string id)
+		{
+			return boards.Any(b => b.id == id);
+		}
+
+		public Board GetBoard(string id)
+		{
+			var board = boards.FirstOrDefault(b => b.id == id);
+
+			if (board == null)
+				throw new Exception($"Board with id {id} not found! Check with 'HasBoard' before.");
 
 			return board;
 		}
 
-		private static BoardEntry LoadItemFromEditorPrefs(string id)
+
+		public void AddBoard(Board board)
 		{
-			var key = $"{KEY_ID}_{id}";
+			Undo.RegisterCompleteObjectUndo(this, $"Create Board {board.title}");
 
-			var typedJsonContent = EditorPrefs.GetString(key, "");
+			boards.Add(board);
+			boardsById.Add(board.id, board);
 
-			if (string.IsNullOrEmpty(typedJsonContent))
+			SaveAll();
+		}
+
+		public void SaveAll()
+		{
+		}
+
+
+		public void DeleteBoard(Board board) => DeleteBoard(board.id);
+
+		public void DeleteBoard(string id)
+		{
+			var index = boards.FindIndex(b => b.id == id);
+			if (index < 0)
+				throw new Exception("Board to be deleted does not exist in database.");
+
+			var board = boards[index];
+
+			switch (board.accessibility)
 			{
-				return null;
+				case BoardAccessibility.ProjectPublic:
+					DeleteBoardFromAssetDatabase(id);
+					break;
+				case BoardAccessibility.Global:
+					DeleteBoardFromEditorPrefsWithContext("", id);
+					break;
+				case BoardAccessibility.ProjectPrivate:
+					DeleteBoardFromEditorPrefsWithContext(PinboardCore.ProjectID, id);
+					break;
 			}
 
-			var typedJson = JsonUtility.FromJson<TypedJson>(typedJsonContent);
-			var item = typedJson.ToObject<BoardEntry>();
-			return item;
+			boards.RemoveAt(index);
+			boardsById.Remove(board.id);
+
+			AssetDatabase.SaveAssets();
+			AssetDatabase.Refresh();
+
+			onBoardDeleted.Invoke(board);
+			onDatabaseModified.Invoke();
 		}
 
-		private static void DeleteIdFromEditorPrefs(string id)
+		private void DeleteBoardFromAssetDatabase(string id)
 		{
-			var key = $"{KEY_ID}_{id}";
+			var container = serializedBoardContainers[id];
+			AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(container));
+			serializedBoardContainers.Remove(id);
 
-			if (EditorPrefs.HasKey(key))
-				EditorPrefs.DeleteKey(key);
-		}
-
-		private static void LoadBoardsFromAssetDatabase()
-		{
-			var guids = AssetDatabase.FindAssets("t:SerializedBoardContainer");
-
-			if (guids == null || guids.Length < 1)
-				return;
-
-			var containers =
-				guids.Select(
-					guid => AssetDatabase.LoadAssetAtPath<SerializedBoardContainer>(
-						AssetDatabase.GUIDToAssetPath(guid))).Where(c => c != null).ToList();
-
-			var serializedBoards = containers.Select(c => c.serializedBoard).ToList();
-			var boards = containers.Select(bc => new Board(bc.serializedBoard)).ToList();
-
-
-			guids = AssetDatabase.FindAssets("t:BoardItemJsonContainer");
-			var itemContainers = guids
-			                     .Select(
-				                     guid => AssetDatabase.LoadAssetAtPath<BoardItemJsonContainer>(
-					                     AssetDatabase.GUIDToAssetPath(guid))).ToList();
-
-			var items = itemContainers.Where(item => item != null).Select(ic =>
+			var board = boardsById[id];
+			foreach (var entry in board.entries)
 			{
-				var typedJson = new TypedJson(ic.type, ic.data);
-				var item = typedJson.ToObject<BoardEntry>();
-				return item;
+				var entryContainer = boardEntryContainers[entry.id];
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(entryContainer));
+				boardEntryContainers.Remove(entry.id);
+			}
+		}
+
+		private void DeleteBoardFromEditorPrefsWithContext(string ctx, string id)
+		{
+			var keyIds = GetPrefsIdsKeyWithContext(ctx);
+			var idsJoined = EditorPrefs.GetString(keyIds, null);
+			var ids = idsJoined.Split(new[] {TOKEN_BREAK}, StringSplitOptions.None).ToList();
+			ids.Remove(id);
+			idsJoined = string.Join(TOKEN_BREAK, ids);
+			EditorPrefs.SetString(keyIds, idsJoined);
+
+			if (EditorPrefs.HasKey(id))
+				EditorPrefs.DeleteKey(id);
+
+			var board = boardsById[id];
+			foreach (var entry in board.entries)
+			{
+				if (EditorPrefs.HasKey(id))
+					EditorPrefs.DeleteKey(id);
+			}
+		}
+
+		public void LoadAll()
+		{
+			LoadAllFromAssetDatabase();
+			LoadAllFromEditorPrefsWithContext("");
+			LoadAllFromEditorPrefsWithContext(PinboardCore.ProjectID);
+
+			boardsById = boards.ToDictionary(board => board.id);
+		}
+
+
+		private void LoadAllFromAssetDatabase()
+		{
+			var boardContainers = Utility.LoadAssets<SerializedBoardContainer>();
+			var serializedBoards = boardContainers.Select(container => container.serializedBoard).ToList();
+
+			var entryContainers = Utility.LoadAssets<BoardEntryJsonContainer>();
+			var entries = entryContainers
+			              .Select(entryData => new TypedJson(entryData.type, entryData.data).ToObject<BoardEntry>())
+			              .ToList();
+
+			this.serializedBoardContainers = new Dictionary<string, SerializedBoardContainer>();
+			for (var i = 0; i < boardContainers.Count; i++)
+			{
+				serializedBoardContainers[serializedBoards[i].id] = boardContainers[i];
+			}
+
+			this.boardEntryContainers = new Dictionary<string, BoardEntryJsonContainer>();
+			for (var i = 0; i < entryContainers.Count; i++)
+			{
+				this.boardEntryContainers[entries[i].id] = entryContainers[i];
+			}
+
+
+			var boards = serializedBoards.Select(serBoard =>
+			{
+				var board = new Board(serBoard);
+				foreach (var entryId in serBoard.entryIds)
+				{
+					var entry = entries.FirstOrDefault(e => e.id == entryId);
+					if (entry == null)
+						continue;
+
+					board.Add(entry);
+				}
+
+				return board;
 			}).ToList();
 
 
-			for (var i = 0; i < boards.Count; i++)
+			this.boards.AddRange(boards);
+		}
+
+		private void LoadAllFromEditorPrefsWithContext(string ctx)
+		{
+			var keyIds = KEY_IDS;
+			if (string.IsNullOrEmpty(ctx) == false)
 			{
-				var board = boards[i];
-				var serializedBoard = serializedBoards[i];
+				keyIds += $"_{ctx}";
+			}
 
-				for (var j = 0; j < serializedBoard.itemIds.Length; j++)
+			var idsJoined = EditorPrefs.GetString(keyIds);
+			var boardIds = idsJoined.Split(new[] {TOKEN_BREAK}, StringSplitOptions.None);
+
+			var boardData = boardIds.Select(id => EditorPrefs.GetString($"{KEY_ID}_{id}", null))
+			                        .Where(data => data != null).ToList();
+			var serializedBoards = boardData.Select(data => JsonUtility.FromJson<SerializedBoard>(data));
+			var boards = serializedBoards.Select(serBoard =>
+			{
+				var board = new Board(serBoard);
+				foreach (var entryId in serBoard.entryIds)
 				{
-					var targetId = serializedBoard.itemIds[j];
-					var item = items.FirstOrDefault(it => it.id == targetId);
-					items.Remove(item);
-
-					if (item == null)
-					{
-						Debug.Log("Board item could not be loaded. - " + targetId);
+					var key = $"{KEY_ID}_{entryId}";
+					var entryData = EditorPrefs.GetString(key, null);
+					if (entryData == null)
 						continue;
-					}
-
-					board.items.Add(item);
-					item.board = board;
+					var entry = JsonUtility.FromJson<TypedJson>(entryData).ToObject<BoardEntry>();
+					board.Add(entry);
 				}
-			}
 
-			PinboardDatabase.boards.AddRange(boards);
-		}
+				return board;
+			});
 
-		public static void SaveBoards()
-		{
-			List<string> globalBoardIDs = new List<string>();
-			List<string> projectPrivateBoardIDs = new List<string>();
-
-			foreach (var board in boards)
-			{
-				if (board.accessibility == BoardAccessibility.ProjectPublic)
-				{
-					SaveBoardToAssetDatabase(board);
-				}
-				else if (board.accessibility == BoardAccessibility.Global)
-				{
-					SaveBoardToEditorPrefs(board);
-					globalBoardIDs.Add(board.id);
-				}
-				else if (board.accessibility == BoardAccessibility.ProjectPrivate)
-				{
-					SaveBoardToEditorPrefs(board);
-					projectPrivateBoardIDs.Add(board.id);
-				}
-			}
-
-			string globalIDsJoined = string.Join(TOKEN_BREAK, globalBoardIDs);
-			string projectPrivateIDsJoined = string.Join(TOKEN_BREAK, projectPrivateBoardIDs);
-
-			EditorPrefs.SetString(KEY_IDS, globalIDsJoined);
-			EditorPrefs.SetString($"{KEY_IDS}_{PinboardCore.ProjectID}", projectPrivateIDsJoined);
-
-			AssetDatabase.SaveAssets();
-			
-			onBoardsModified.Invoke();
-
+			this.boards.AddRange(boards);
 		}
 
 
-		private static void SaveBoardToAssetDatabase(Board board)
+		private string GetPrefsIdsKeyWithContext(string ctx)
 		{
-			var serializedBoard = new SerializedBoard(board);
-			var items = board.items;
-			var pathBoard = PinboardCore.DIR_DATA + $"/{board.id}.asset";
-			var boardContainer = AssetDatabase.LoadAssetAtPath<SerializedBoardContainer>(pathBoard);
-			if (boardContainer == null)
-			{
-				boardContainer = ScriptableObject.CreateInstance<SerializedBoardContainer>();
-				CreateAsset(boardContainer, pathBoard);
-			}
-
-			boardContainer.serializedBoard = serializedBoard;
-			EditorUtility.SetDirty(boardContainer);
-
-			foreach (var item in items)
-			{
-				var path = PinboardCore.DIR_DATA + $"/{item.id}.asset";
-				var itemContainer = AssetDatabase.LoadAssetAtPath<BoardItemJsonContainer>(path);
-				if (itemContainer == null)
-				{
-					itemContainer = ScriptableObject.CreateInstance<BoardItemJsonContainer>();
-					CreateAsset(itemContainer, path);
-				}
-
-				itemContainer.type = item.GetType().FullName;
-				itemContainer.data = JsonUtility.ToJson(item, true);
-
-				EditorUtility.SetDirty(itemContainer);
-			}
-		}
-
-
-		private static void SaveBoardToEditorPrefs(Board board)
-		{
-			var serializedBoard = new SerializedBoard(board);
-			var items = board.items;
-			var key = $"{KEY_ID}_{board.id}";
-			var val = JsonUtility.ToJson(serializedBoard);
-
-			EditorPrefs.SetString(key, val);
-
-			foreach (var boardItem in items)
-			{
-				SaveBoardItemToEditorPrefs(boardItem);
-			}
-		}
-
-
-		private static void SaveBoardItemToEditorPrefs(BoardEntry entry)
-		{
-			var key = $"{KEY_ID}_{entry.id}";
-			var val = JsonUtility.ToJson(TypedJson.Create(entry));
-			EditorPrefs.SetString(key, val);
-		}
-
-
-		private static List<T> LoadAssets<T>() where T : UnityEngine.Object
-		{
-			var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
-
-			if (guids == null || guids.Length < 1)
-				return new List<T>();
-
-			var assets =
-				guids.Select(
-					guid => AssetDatabase.LoadAssetAtPath<T>(
-						AssetDatabase.GUIDToAssetPath(guid))).ToList();
-
-			return assets;
+			return string.IsNullOrEmpty(ctx) ? KEY_IDS : $"{KEY_IDS}_{ctx}";
 		}
 
 		public static void CreateAsset(UnityEngine.Object asset, string path)
