@@ -50,7 +50,7 @@ namespace Pinboard
 
 		private ListView itemsList;
 
-		private List<BoardEntry> visibleItems;
+		private List<Entry> visibleItems;
 
 
 		private void OnEnable()
@@ -303,14 +303,14 @@ namespace Pinboard
 					                                                  if (b)
 					                                                  {
 						                                                  PinboardCore.TryDeleteEntry(
-							                                                  root.userData as BoardEntry,
+							                                                  root.userData as Entry,
 							                                                  currentBoard);
 						                                                  Refresh();
 					                                                  }
 				                                                  })));
 
 			root.AddManipulator(new ClickActionsManipulator(() => { },
-			                                                () => { (root.userData as BoardEntry).OnDoubleClick(); }));
+			                                                () => { (root.userData as Entry).OnDoubleClick(); }));
 
 			var img = new Image();
 			img.style.width = 15;
@@ -383,7 +383,7 @@ namespace Pinboard
 			if (board == null)
 			{
 				PinboardPrefs.LastOpenBoardID = string.Empty;
-				itemsList.itemsSource = new List<BoardEntry>();
+				itemsList.itemsSource = new List<Entry>();
 			}
 			else
 			{

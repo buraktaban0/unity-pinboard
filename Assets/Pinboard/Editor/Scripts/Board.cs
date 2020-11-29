@@ -12,6 +12,8 @@ namespace Pinboard
 	[System.Serializable]
 	public class Board
 	{
+		public bool IsDirty { get; set; }
+
 		public string id = Guid.Get();
 
 		public BoardAccessibility accessibility = BoardAccessibility.Global;
@@ -25,7 +27,7 @@ namespace Pinboard
 		public DateTime CreationTime => Utility.FromUnixToLocal(createdAt);
 
 		[SerializeReference]
-		public List<BoardEntry> entries = new List<BoardEntry>();
+		public List<Entry> entries = new List<Entry>();
 
 		public Board()
 		{
@@ -40,12 +42,12 @@ namespace Pinboard
 			createdAt = serializedBoard.createdAt;
 		}
 
-		public void Add(BoardEntry entry)
+		public void Add(Entry entry)
 		{
 			entries.Add(entry);
 		}
 
-		public void Remove(BoardEntry item)
+		public void Remove(Entry item)
 		{
 			entries.Remove(item);
 		}

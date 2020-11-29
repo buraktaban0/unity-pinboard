@@ -6,11 +6,16 @@ using UnityEngine.UIElements;
 namespace Pinboard
 {
 	[System.Serializable]
-	public abstract class BoardEntry
+	public abstract class Entry
 	{
+		
+		public bool IsDirty { get; set; }
+
+		public abstract string ShortVisibleName { get; }
+
 		[NonSerialized]
 		public Board board;
-		
+
 		public string id = Guid.Get();
 
 		public string author = PinboardCore.User;
@@ -25,7 +30,7 @@ namespace Pinboard
 		public abstract bool Create();
 
 		public abstract bool EditOrUpdate();
-		
+
 		public virtual void OnClick()
 		{
 		}
@@ -38,6 +43,5 @@ namespace Pinboard
 		{
 			return false;
 		}
-
 	}
 }

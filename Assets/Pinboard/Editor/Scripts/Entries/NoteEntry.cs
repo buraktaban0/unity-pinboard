@@ -5,8 +5,10 @@ namespace Pinboard.Items
 {
 	[System.Serializable]
 	[EntryType(visibleName = "Note")]
-	public class NoteEntry : BoardEntry
+	public class NoteEntry : Entry
 	{
+		public override string ShortVisibleName => content.Truncate();
+
 		public string content;
 
 

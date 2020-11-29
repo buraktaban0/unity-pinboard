@@ -40,10 +40,10 @@ namespace Pinboard
 		public PinboardEvent onDatabaseModified = delegate { };
 
 		private Dictionary<string, SerializedBoardContainer> serializedBoardContainers;
-		private Dictionary<string, BoardEntryJsonContainer> boardEntryContainers;
+		private Dictionary<string, BoardEntryJsonContainer> entryContainer;
 
 		private Dictionary<string, Board> boardsById;
-		private Dictionary<string, BoardEntry> entriesById;
+		private Dictionary<string, Entry> entriesById;
 
 		[SerializeField]
 		private List<Board> boards;
@@ -60,7 +60,18 @@ namespace Pinboard
 		public void OnAfterDeserialize()
 		{
 			Debug.Log("After database serialize");
-			SaveAll();
+			Save();
+		}
+
+
+		public void WillModifyEntry(Entry entry)
+		{
+			Undo.RegisterCompleteObjectUndo(this, $"Modify Entry '{entry.ShortVisibleName}'");
+		}
+
+		public void WillModifyBoard(Board board)
+		{
+			Undo.RegisterCompleteObjectUndo(this, $"Modify Board '{board.title}'");
 		}
 
 		public bool HasBoard(string id)
@@ -86,11 +97,112 @@ namespace Pinboard
 			boards.Add(board);
 			boardsById.Add(board.id, board);
 
-			SaveAll();
+			Save();
 		}
 
-		public void SaveAll()
+		public void Save()
 		{
+			foreach (var board in boards)
+			{
+				if (board.IsDirty)
+				{
+					SaveBoard(board);
+					board.IsDirty = false;
+				}
+
+				foreach (var entry in board.entries)
+				{
+					if (entry.IsDirty)
+					{
+						SaveEntry(entry);
+						entry.IsDirty = false;
+					}
+				}
+			}
+
+
+			AssetDatabase.SaveAssets();
+		}
+
+		private void SaveBoard(Board board)
+		{
+			switch (board.accessibility)
+			{
+				case BoardAccessibility.ProjectPublic:
+					SaveBoardToAssetDatabase(board);
+					break;
+				case BoardAccessibility.Global:
+					SaveBoardToEditorPrefsWithContext("", board);
+					break;
+				case BoardAccessibility.ProjectPrivate:
+					SaveBoardToEditorPrefsWithContext(PinboardCore.ProjectID, board);
+					break;
+			}
+		}
+
+		private void SaveBoardToAssetDatabase(Board board)
+		{
+			if (!serializedBoardContainers.TryGetValue(board.id, out var container))
+			{
+				container = ScriptableObject.CreateInstance<SerializedBoardContainer>();
+				AssetDatabase.CreateAsset(container, PinboardCore.DIR_DATA + "/" + board.id + ".asset");
+			}
+
+			container.serializedBoard = new SerializedBoard(board);
+			EditorUtility.SetDirty(container);
+		}
+
+		private void SaveBoardToEditorPrefsWithContext(string ctx, Board board)
+		{
+			var keyIds = GetPrefsIdsKeyWithContext(ctx);
+			var idsJoined = EditorPrefs.GetString(keyIds);
+			var ids = idsJoined.Split(new[] {TOKEN_BREAK}, StringSplitOptions.None).ToList();
+			if (!ids.Contains(board.id))
+				ids.Add(board.id);
+
+			idsJoined = string.Join(TOKEN_BREAK, ids);
+			EditorPrefs.SetString(keyIds, idsJoined);
+
+			var serializedBoard = new SerializedBoard(board);
+			var key = GetPrefsIdKey(board.id);
+			var json = JsonUtility.ToJson(serializedBoard);
+
+			EditorPrefs.SetString(key, json);
+		}
+
+		private void SaveEntry(Entry entry)
+		{
+			switch (entry.board.accessibility)
+			{
+				case BoardAccessibility.ProjectPublic:
+					SaveEntryToAssetDatabase(entry);
+					break;
+				case BoardAccessibility.Global:
+				case BoardAccessibility.ProjectPrivate:
+					SaveEntryToEditorPrefs(entry);
+					break;
+			}
+		}
+
+		private void SaveEntryToAssetDatabase(Entry entry)
+		{
+			if (!entryContainer.TryGetValue(entry.id, out var container))
+			{
+				container = ScriptableObject.CreateInstance<BoardEntryJsonContainer>();
+				AssetDatabase.CreateAsset(container, PinboardCore.DIR_DATA + "/" + entry.id + ".asset");
+			}
+
+			container.type = entry.GetType().FullName;
+			container.data = JsonUtility.ToJson(entry);
+			EditorUtility.SetDirty(container);
+		}
+
+		private void SaveEntryToEditorPrefs(Entry entry)
+		{
+			var typedJson = new TypedJson(entry.GetType().FullName, JsonUtility.ToJson(entry));
+			var json = JsonUtility.ToJson(typedJson);
+			var key = GetPrefsIdKey(entry.id);
+			EditorPrefs.SetString(key, json);
 		}
 
 
@@ -103,6 +215,8 @@ namespace Pinboard
 				throw new Exception("Board to be deleted does not exist in database.");
 
 			var board = boards[index];
+
+			Undo.RegisterCompleteObjectUndo(this, $"Delete Board {board.title}");
 
 			switch (board.accessibility)
 			{
@@ -136,9 +250,9 @@ namespace Pinboard
 			var board = boardsById[id];
 			foreach (var entry in board.entries)
 			{
-				var entryContainer = boardEntryContainers[entry.id];
+				var entryContainer = this.entryContainer[entry.id];
 				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(entryContainer));
-				boardEntryContainers.Remove(entry.id);
+				this.entryContainer.Remove(entry.id);
 			}
 		}
 
@@ -179,7 +293,7 @@ namespace Pinboard
 
 			var entryContainers = Utility.LoadAssets<BoardEntryJsonContainer>();
 			var entries = entryContainers
-			              .Select(entryData => new TypedJson(entryData.type, entryData.data).ToObject<BoardEntry>())
+			              .Select(entryData => new TypedJson(entryData.type, entryData.data).ToObject<Entry>())
 			              .ToList();
 
 			this.serializedBoardContainers = new Dictionary<string, SerializedBoardContainer>();
@@ -188,10 +302,10 @@ namespace Pinboard
 				serializedBoardContainers[serializedBoards[i].id] = boardContainers[i];
 			}
 
-			this.boardEntryContainers = new Dictionary<string, BoardEntryJsonContainer>();
+			this.entryContainer = new Dictionary<string, BoardEntryJsonContainer>();
 			for (var i = 0; i < entryContainers.Count; i++)
 			{
-				this.boardEntryContainers[entries[i].id] = entryContainers[i];
+				this.entryContainer[entries[i].id] = entryContainers[i];
 			}
 
 
@@ -237,7 +351,7 @@ namespace Pinboard
 					var entryData = EditorPrefs.GetString(key, null);
 					if (entryData == null)
 						continue;
-					var entry = JsonUtility.FromJson<TypedJson>(entryData).ToObject<BoardEntry>();
+					var entry = JsonUtility.FromJson<TypedJson>(entryData).ToObject<Entry>();
 					board.Add(entry);
 				}
 
@@ -251,6 +365,11 @@ namespace Pinboard
 		private string GetPrefsIdsKeyWithContext(string ctx)
 		{
 			return string.IsNullOrEmpty(ctx) ? KEY_IDS : $"{KEY_IDS}_{ctx}";
+		}
+
+		private string GetPrefsIdKey(string id)
+		{
+			return $"{KEY_ID}_{id}";
 		}
 
 		public static void CreateAsset(UnityEngine.Object asset, string path)

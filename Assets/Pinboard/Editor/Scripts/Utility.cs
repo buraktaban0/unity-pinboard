@@ -94,6 +94,10 @@ namespace Pinboard
 			             .Replace(input, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
 		}
 
+		public static string Truncate(this string s, int maxChars = 10, string truncateString = "…")
+		{
+			return s.Length <= maxChars ? s : $"{s.Substring(0, maxChars - truncateString.Length)}{truncateString}";
+		}
 
 		public static void MakeDirs(string path)
 		{
@@ -108,7 +112,7 @@ namespace Pinboard
 				return;
 
 			var parent = segments[0];
-			
+
 			for (int i = 1; i < segments.Count; i++)
 			{
 				if (AssetDatabase.IsValidFolder(parent + "/" + segments[i]) == false)
@@ -119,7 +123,7 @@ namespace Pinboard
 				parent = parent + "/" + segments[i];
 			}
 		}
-		
+
 		public static List<T> LoadAssets<T>() where T : UnityEngine.Object
 		{
 			var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
@@ -134,7 +138,5 @@ namespace Pinboard
 
 			return assets;
 		}
-
-		
 	}
 }

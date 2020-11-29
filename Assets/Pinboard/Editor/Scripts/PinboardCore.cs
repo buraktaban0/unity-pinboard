@@ -115,7 +115,7 @@ namespace Pinboard
 		private static void InitializeTypes()
 		{
 			EntryTypes = new List<Type>(typeof(PinboardCore).Assembly.GetTypes()
-			                                                .Where(type => type.IsSubclassOf(typeof(BoardEntry)) &&
+			                                                .Where(type => type.IsSubclassOf(typeof(Entry)) &&
 			                                                               type.IsDefined(
 				                                                               typeof(EntryTypeAttribute), true)));
 			EntryTypeNames = EntryTypes
@@ -145,7 +145,7 @@ namespace Pinboard
 				return;
 			}
 
-			var entry = System.Activator.CreateInstance(entryType) as BoardEntry;
+			var entry = System.Activator.CreateInstance(entryType) as Entry;
 
 			if (entry == null)
 			{
@@ -164,7 +164,7 @@ namespace Pinboard
 			//PinboardDatabase.SaveBoards();
 		}
 
-		public static void TryDeleteEntry(BoardEntry item, Board board)
+		public static void TryDeleteEntry(Entry item, Board board)
 		{
 			if (board == null || item == null)
 				return;

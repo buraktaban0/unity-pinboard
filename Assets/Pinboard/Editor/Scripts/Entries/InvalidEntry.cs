@@ -3,8 +3,10 @@
 namespace Pinboard.Items
 {
 	[System.Serializable]
-	public class InvalidEntry : BoardEntry
+	public class InvalidEntry : Entry
 	{
+		public override string ShortVisibleName => "Invalid Entry";
+
 		public override void BindVisualElement(VisualElement el)
 		{
 			
