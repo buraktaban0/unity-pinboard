@@ -9,6 +9,7 @@ using UnityEngine.Serialization;
 
 namespace Pinboard
 {
+	[System.Serializable]
 	public class Board
 	{
 		public string id = Guid.Get();
@@ -23,6 +24,7 @@ namespace Pinboard
 
 		public DateTime CreationTime => Utility.FromUnixToLocal(createdAt);
 
+		[SerializeReference]
 		public List<BoardEntry> items = new List<BoardEntry>();
 
 		public Board()

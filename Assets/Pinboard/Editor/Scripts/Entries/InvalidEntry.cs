@@ -2,6 +2,7 @@
 
 namespace Pinboard.Items
 {
+	[System.Serializable]
 	public class InvalidEntry : BoardEntry
 	{
 		public override void BindVisualElement(VisualElement el)

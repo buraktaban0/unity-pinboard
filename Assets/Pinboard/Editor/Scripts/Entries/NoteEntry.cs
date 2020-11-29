@@ -3,6 +3,7 @@ using UnityEngine.UIElements;
 
 namespace Pinboard.Items
 {
+	[System.Serializable]
 	[EntryType(visibleName = "Note")]
 	public class NoteEntry : BoardEntry
 	{
@@ -58,22 +59,24 @@ namespace Pinboard.Items
 
 			isBeingEdited = true;
 
-			var result = NotePopup.ShowPopup(popupTitle, this.content, s =>
+			var wasEdited = NotePopup.ShowPopup(popupTitle, this.content, s =>
 			{
 				popupTitle = "Update Note";
 				this.content = s;
 			});
-
 			isBeingEdited = false;
 
-			return result;
+			return wasEdited;
 		}
 
 		public override void OnDoubleClick()
 		{
 			base.OnDoubleClick();
 
-			this.EditOrUpdate();
+			if (this.EditOrUpdate())
+			{
+				PinboardDatabase.SaveBoards();
+			}
 		}
 
 		public override bool IsValidForSearch(string[] filters)

@@ -13,12 +13,18 @@ namespace Pinboard
 
 	public delegate void PinboardBoardEvent(Board board);
 
-	public static class PinboardDatabase
+	public class PinboardDatabase : ScriptableObject
 	{
+
+		public List<Board> undoBoards;
+		
 		private const string TOKEN_BREAK = ";";
 		private const string KEY_IDS = "PINBOARD_BOARD_IDS";
 
 		private const string KEY_ID = "PINBOARD_BOARD";
+
+		public static PinboardDatabase Current;
+		
 		public static string DIR_PINBOARD_ROOT => Application.dataPath + "/Pinboard/";
 
 		public static string DIR_BOARDS = DIR_PINBOARD_ROOT + "Boards/";
@@ -64,7 +70,6 @@ namespace Pinboard
 			{
 				DeleteIdFromEditorPrefs(item.id);
 			}
-
 
 			AssetDatabase.SaveAssets();
 		}
@@ -217,6 +222,7 @@ namespace Pinboard
 				}
 
 				board.items.Add(item);
+				item.board = board;
 			}
 
 			return board;
@@ -294,6 +300,7 @@ namespace Pinboard
 					}
 
 					board.items.Add(item);
+					item.board = board;
 				}
 			}
 

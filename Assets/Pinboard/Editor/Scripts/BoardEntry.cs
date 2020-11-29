@@ -8,6 +8,8 @@ namespace Pinboard
 	[System.Serializable]
 	public abstract class BoardEntry
 	{
+		[NonSerialized]
+		public Board board;
 		
 		public string id = Guid.Get();
 
