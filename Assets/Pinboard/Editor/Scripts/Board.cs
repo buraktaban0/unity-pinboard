@@ -45,11 +45,13 @@ namespace Pinboard
 		public void Add(Entry entry)
 		{
 			entries.Add(entry);
+			IsDirty = true;
 		}
 
 		public void Remove(Entry item)
 		{
 			entries.Remove(item);
+			IsDirty = true;
 		}
 
 		[MenuItem("Tools/TestMachineName")]
@@ -65,10 +67,10 @@ namespace Pinboard
 	public class SerializedBoard
 	{
 		public string id;
-		
+
 		[HideInInspector]
 		public BoardAccessibility accessibility;
-		
+
 		public string title;
 		public string createdBy;
 		public long createdAt;

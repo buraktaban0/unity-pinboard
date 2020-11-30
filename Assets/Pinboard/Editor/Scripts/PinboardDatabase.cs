@@ -68,6 +68,7 @@ namespace Pinboard
 		public PinboardBoardEvent onBoardAdded = delegate { };
 		public PinboardBoardEvent onBoardDeleted = delegate { };
 		public PinboardEvent onDatabaseModified = delegate { };
+		public PinboardEvent onDatabaseSaved = delegate { };
 
 		private Dictionary<string, SerializedBoardContainer> serializedBoardContainers;
 		private Dictionary<string, BoardEntryJsonContainer> entryContainer;
@@ -161,6 +162,11 @@ namespace Pinboard
 			Save();
 		}
 
+		public bool NeedsSave()
+		{
+			return boards.Any(b => b.IsDirty || b.entries.Any(e => e.IsDirty));
+		}
+
 		public void Save()
 		{
 			foreach (var board in boards)
@@ -181,8 +187,9 @@ namespace Pinboard
 				}
 			}
 
-
 			AssetDatabase.SaveAssets();
+
+			onDatabaseSaved.Invoke();
 		}
 
 		private void SaveBoard(Board board)
@@ -269,6 +276,13 @@ namespace Pinboard
 
 		public void DeleteBoard(Board board) => DeleteBoard(board.id);
 
+		public void DeleteItemFromBoard(Entry entry, Board board)
+		{
+			Undo.RegisterCompleteObjectUndo(this, $"Delete '{entry.ShortVisibleName}' from '{board.title}'");
+			board.Remove(entry);
+			Save();
+		}
+
 		public void DeleteBoard(string id)
 		{
 			var index = boards.FindIndex(b => b.id == id);
@@ -277,7 +291,7 @@ namespace Pinboard
 
 			var board = boards[index];
 
-			Undo.RegisterCompleteObjectUndo(this, $"Delete Board {board.title}");
+			Undo.RegisterCompleteObjectUndo(this, $"Delete board '{board.title}'");
 
 			switch (board.accessibility)
 			{
@@ -337,7 +351,7 @@ namespace Pinboard
 			}
 		}
 
-		public void LoadAll()
+		public void Load()
 		{
 			LoadAllFromAssetDatabase();
 			LoadAllFromEditorPrefsWithContext("");

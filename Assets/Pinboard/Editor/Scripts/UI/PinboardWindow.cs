@@ -76,6 +76,7 @@ namespace Pinboard
 			PinboardDatabase.Current.onBoardAdded += OnBoardAdded;
 			PinboardDatabase.Current.onBoardDeleted += OnBoardDeleted;
 			PinboardDatabase.Current.onDatabaseModified += OnBoardsModified;
+			PinboardDatabase.Current.onDatabaseSaved += OnDatabaseSaved;
 
 			this.Refresh();
 		}
@@ -86,6 +87,12 @@ namespace Pinboard
 			PinboardDatabase.Current.onBoardAdded -= OnBoardAdded;
 			PinboardDatabase.Current.onBoardDeleted -= OnBoardDeleted;
 			PinboardDatabase.Current.onDatabaseModified -= OnBoardsModified;
+			PinboardDatabase.Current.onDatabaseSaved -= OnDatabaseSaved;
+		}
+
+		private void OnDatabaseSaved()
+		{
+			Refresh();
 		}
 
 		private void OnBoardsModified()
