@@ -412,14 +412,18 @@ namespace Pinboard
 			}
 
 			var idsJoined = EditorPrefs.GetString(keyIds);
-			var boardIds = idsJoined.Split(new[] {TOKEN_BREAK}, StringSplitOptions.None);
+			var boardIds = string.IsNullOrEmpty(idsJoined)
+				? new string[] { }
+				: idsJoined.Split(new[] {TOKEN_BREAK}, StringSplitOptions.None);
 
 			var boardData = boardIds.Select(id => EditorPrefs.GetString($"{KEY_ID}_{id}", null))
 			                        .Where(data => data != null).ToList();
-			var serializedBoards = boardData.Select(data => JsonUtility.FromJson<SerializedBoard>(data));
+			var serializedBoards = boardData.Select(data => JsonUtility.FromJson<SerializedBoard>(data))
+			                                .Where(s => s != null && s.entryIds != null);
 			var boards = serializedBoards.Select(serBoard =>
 			{
 				var board = new Board(serBoard);
+
 				foreach (var entryId in serBoard.entryIds)
 				{
 					var key = $"{KEY_ID}_{entryId}";

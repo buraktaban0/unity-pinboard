@@ -159,6 +159,7 @@ namespace Pinboard
 				return;
 			}
 
+			PinboardDatabase.Current.WillModifyBoard(selectedBoard);
 			selectedBoard.Add(entry);
 
 			//PinboardDatabase.SaveBoards();
