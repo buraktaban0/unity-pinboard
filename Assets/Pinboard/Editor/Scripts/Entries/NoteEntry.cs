@@ -23,6 +23,8 @@ namespace Pinboard.Items
 
 		public NoteEntry(string content)
 		{
+			this.IsDirty = true;
+
 			this.content = content;
 		}
 
@@ -63,7 +65,7 @@ namespace Pinboard.Items
 
 			PinboardDatabase.Current.WillModifyEntry(this);
 
-			var wasEdited = NotePopup.ShowPopup(popupTitle, this.content, s =>
+			var wasEdited = TextEditPopup.ShowPopup(popupTitle, this.content, s =>
 			{
 				popupTitle = "Update Note";
 				this.content = s;
@@ -84,6 +86,25 @@ namespace Pinboard.Items
 			{
 				//PinboardDatabase.SaveBoards();
 			}
+		}
+
+		public override void PopulateContextualMenu(ContextualMenuPopulateEvent evt)
+		{
+			base.PopulateContextualMenu(evt);
+
+			evt.menu.AppendAction("Edit", action => { this.EditOrUpdate(); });
+			evt.menu.AppendAction("Copy", action =>
+			{
+				PinboardClipboard.Entry = this;
+				PinboardClipboard.SystemBuffer = this.content;
+			});
+		}
+
+		public override Entry Clone()
+		{
+			var clone = new NoteEntry(content);
+			clone.IsDirty = true;
+			return clone;
 		}
 
 		public override bool IsValidForSearch(string[] filters)

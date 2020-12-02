@@ -7,11 +7,11 @@ using UnityEngine.UIElements;
 
 namespace Pinboard
 {
-	public class NotePopup : EditorWindow
+	public class TextEditPopup : EditorWindow
 	{
 		public static bool ShowPopup(string title, string initialValue, Action<string> onEditDone)
 		{
-			var window = ScriptableObject.CreateInstance<NotePopup>();
+			var window = ScriptableObject.CreateInstance<TextEditPopup>();
 
 			window.titleContent = new GUIContent(title);
 

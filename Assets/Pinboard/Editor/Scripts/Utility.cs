@@ -94,10 +94,25 @@ namespace Pinboard
 			             .Replace(input, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
 		}
 
-		public static string Truncate(this string s, int maxChars = 10, string truncateString = "…")
+		public static string Truncate(this string s, int maxChars = 16, string truncateString = "…")
 		{
 			return s.Length <= maxChars ? s : $"{s.Substring(0, maxChars - truncateString.Length)}{truncateString}";
 		}
+
+
+		public static string CorrectlyEnumerate(this string s, IEnumerable<string> others)
+		{
+			var list = others.ToList();
+			var s1 = s;
+			int index = 1;
+			while (list.Contains(s1))
+			{
+				s1 = s + "_" + index++;
+			}
+
+			return s1;
+		}
+
 
 		public static void MakeDirs(string path)
 		{
@@ -138,5 +153,17 @@ namespace Pinboard
 
 			return assets;
 		}
+
+
+		public static void SetClipboard(string s)
+		{
+			GUIUtility.systemCopyBuffer = s;
+		}
+
+		public static string GetClipboard()
+		{
+			return GUIUtility.systemCopyBuffer;
+		}
+
 	}
 }

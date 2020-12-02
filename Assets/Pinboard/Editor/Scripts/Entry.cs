@@ -1,15 +1,25 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Pinboard
 {
+	// public abstract class Entry<T> : Entry where T : Entry<T>, new()
+	// {
+	// 	public static T CreateInstance()
+	// 	{
+	// 		var t = new T();
+	// 		t.IsDirty = true;
+	// 		return t;
+	// 	}
+	// }
+
 	[System.Serializable]
 	public abstract class Entry
 	{
-
-		public bool IsDirty { get; set; } = true;
+		public bool IsDirty { get; set; } = false;
 
 		public abstract string ShortVisibleName { get; }
 
@@ -43,5 +53,12 @@ namespace Pinboard
 		{
 			return false;
 		}
+
+		public virtual void PopulateContextualMenu(ContextualMenuPopulateEvent evt)
+		{
+			
+		}
+
+		public abstract Entry Clone();
 	}
 }

@@ -37,22 +37,31 @@ namespace Pinboard
 
 		private static Test obj;
 
-		
+		[MenuItem("Test/setclip")]
+		public static void SetClipboard()
+		{
+			GUIUtility.systemCopyBuffer = "Test!!!";
+		}
+
+		[MenuItem("Test/getclip")]
+		public static void GetClipboard()
+		{
+			Debug.Log(GUIUtility.systemCopyBuffer);
+		}
+
+
 		[MenuItem("Test/loop")]
 		public static void TestLoop()
 		{
 			Debug.Log("before");
-			
+
 			PinboardDatabase.Current.WillModifyEntry(new NoteEntry("This is my content"));
-			
-			NotePopup.ShowPopup("asd", "qwe", s =>
-			{
-				Debug.Log("done");
-			});
+
+			TextEditPopup.ShowPopup("asd", "qwe", s => { Debug.Log("done"); });
 			Debug.Log("after");
 		}
 
-		
+
 		[MenuItem("Test/A")]
 		public static void TestA()
 		{
@@ -77,7 +86,7 @@ namespace Pinboard
 			obj.a.bs[0].x = 10;
 			TestPrint();
 		}
-		
+
 		[MenuItem("Test/Remove")]
 		public static void Remove()
 		{

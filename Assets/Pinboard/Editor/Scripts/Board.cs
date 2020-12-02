@@ -12,7 +12,7 @@ namespace Pinboard
 	[System.Serializable]
 	public class Board
 	{
-		public bool IsDirty { get; set; } = true;
+		public bool IsDirty { get; set; } = false;
 
 		public string id = Guid.Get();
 
@@ -29,8 +29,24 @@ namespace Pinboard
 		[SerializeReference]
 		public List<Entry> entries = new List<Entry>();
 
+		public static Board Create()
+		{
+			var board = new Board();
+			board.IsDirty = true;
+			return board;
+		}
+
+		public static Board Create(CreateBoardOptions options)
+		{
+			var board = Create();
+			board.title = options.title.CorrectlyEnumerate(PinboardDatabase.Current.Boards.Select(b => b.title));
+			board.accessibility = options.accessibility;
+			return board;
+		}
+
 		public Board()
 		{
+			
 		}
 
 		public Board(SerializedBoard serializedBoard)
@@ -45,6 +61,7 @@ namespace Pinboard
 		public void Add(Entry entry)
 		{
 			entry.board = this;
+			entry.IsDirty = true;
 			entries.Add(entry);
 			IsDirty = true;
 		}
@@ -86,6 +103,7 @@ namespace Pinboard
 			title = board.title;
 			createdBy = board.createdBy;
 			createdAt = board.createdAt;
+			Debug.Log(board.entries.Count);
 			entryIds = board.entries.Select(item => item.id).ToArray();
 		}
 	}

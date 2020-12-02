@@ -48,6 +48,8 @@ namespace Pinboard
 		private Label boardNameLabel;
 		private ToolbarMenu addMenu;
 
+		private ContextualMenuManipulator boardToolbarContextualManipulator;
+
 		private ListView itemsList;
 
 		private List<Entry> visibleItems;
@@ -187,8 +189,21 @@ namespace Pinboard
 			boardToolbar = toolbar;
 			toolbar.AddToClassList(CLASS_BOARD_TOOLBAR);
 
-			toolbar.AddManipulator(new ContextualMenuManipulator(pop =>
+			boardToolbarContextualManipulator = new ContextualMenuManipulator(pop =>
 			{
+				pop.menu.AppendAction("Rename Board", action =>
+				{
+					TextEditPopup.ShowPopup("Rename Board", currentBoard.title, s =>
+					{
+						if (currentBoard.title == s.Trim())
+							return;
+
+						PinboardDatabase.Current.WillModifyBoard(currentBoard);
+						currentBoard.title =
+							s.Trim().CorrectlyEnumerate(PinboardDatabase.Current.Boards.Select(b => b.title));
+						currentBoard.IsDirty = true;
+					});
+				});
 				pop.menu.AppendAction("Delete Board", action =>
 				{
 					var delete = EditorUtility.DisplayDialog("Delete Board",
@@ -200,9 +215,9 @@ namespace Pinboard
 						PinboardDatabase.Current.DeleteBoard(currentBoard);
 					}
 				});
-				pop.menu.AppendAction("Log1", action => { Debug.Log(action.name); });
-				pop.menu.AppendAction("Log2", action => { Debug.Log(action.name); });
-			}));
+			});
+
+			toolbar.AddManipulator(boardToolbarContextualManipulator);
 
 			toolbar.AddManipulator(new ClickActionsManipulator(
 				                       () => { }, () => { Debug.Log("double click"); }));
@@ -240,6 +255,7 @@ namespace Pinboard
 				boardNameLabel.text = "";
 				boardToolbar.tooltip = "";
 				addMenu.SetEnabled(false);
+				boardToolbar.RemoveManipulator(boardToolbarContextualManipulator);
 			}
 			else
 			{
@@ -249,13 +265,19 @@ namespace Pinboard
 				                       $"\nCreation date: {currentBoard.CreationTime.ToShortDateString()}, {currentBoard.CreationTime.ToShortTimeString()}"
 					/*+ $"\nUnique ID: {currentBoard.id}"*/;
 				addMenu.SetEnabled(true);
+				boardToolbar.AddManipulator(boardToolbarContextualManipulator);
 			}
 		}
 
 
 		private void OnSearchValueChanged(ChangeEvent<string> evt)
 		{
-			var str = evt.newValue;
+			ValidateSearch();
+		}
+
+		private void ValidateSearch()
+		{
+			var str = searchField.value;
 
 			if (currentBoard == null)
 				return;
@@ -284,7 +306,8 @@ namespace Pinboard
 			// itemsList.unbindItem = UnbindItem;
 			itemsList.reorderable = true;
 			itemsList.itemHeight = 22;
-			itemsList.selectionType = SelectionType.Multiple;
+			itemsList.selectionType = SelectionType.None;
+			//itemsList.selectionType = SelectionType.Multiple;
 			itemsList.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
 			itemsList.onSelectionChange += OnItemSelectionChange;
 			itemsList.RegisterCallback<GeometryChangedEvent>(ListGeoChanged);
@@ -297,22 +320,39 @@ namespace Pinboard
 			var root = new VisualElement();
 			root.AddToClassList(CLASS_LIST_ITEM_ROOT);
 
-			root.AddManipulator(new ContextualMenuManipulator(evt => evt.menu.AppendAction("Delete Entry",
-				                                                  action =>
-				                                                  {
-					                                                  var b = EditorUtility.DisplayDialog(
-						                                                  "Deleting Board Entry",
-						                                                  "Are you sure you want to delete this entry?",
-						                                                  "Yes", "No");
+			root.AddManipulator(new ContextualMenuManipulator(evt =>
+			{
+				var entry = root.userData as Entry;
+				entry.PopulateContextualMenu(evt);
+				
+				evt.menu.AppendSeparator();
+				
+				evt.menu.AppendAction("Delete Entry",
+				                      action =>
+				                      {
+					                      var b = EditorUtility.DisplayDialog(
+						                      "Deleting Board Entry",
+						                      "Are you sure you want to delete this entry?",
+						                      "Yes", "No");
 
-					                                                  if (b)
-					                                                  {
-						                                                  PinboardCore.TryDeleteEntry(
-							                                                  root.userData as Entry,
-							                                                  currentBoard);
-						                                                  Refresh();
-					                                                  }
-				                                                  })));
+					                      if (b)
+					                      {
+						                      PinboardCore.TryDeleteEntry(
+							                      root.userData as Entry,
+							                      currentBoard);
+						                      Refresh();
+					                      }
+				                      });
+				if (PinboardClipboard.Entry != null)
+				{
+					evt.menu.AppendAction($"Paste ({PinboardClipboard.Entry.ShortVisibleName})", action =>
+					{
+						PinboardCore.TryCreateEntry(PinboardClipboard.Entry);
+						Refresh();
+					});
+				}
+
+			}));
 
 			root.AddManipulator(new ClickActionsManipulator(() => { },
 			                                                () => { (root.userData as Entry).OnDoubleClick(); }));
@@ -349,7 +389,7 @@ namespace Pinboard
 
 		public void Refresh()
 		{
-			PinboardDatabase.Current.Load();
+			//PinboardDatabase.Current.Load();
 
 			if (PinboardDatabase.Current.BoardCount < 1)
 			{
@@ -380,6 +420,8 @@ namespace Pinboard
 
 				SetBoard(lastOpenBoard);
 			}
+			
+			ValidateSearch();
 		}
 
 

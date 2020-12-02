@@ -139,9 +139,8 @@ namespace Pinboard
 
 		public static Board TryCreateBoard(CreateBoardOptions options)
 		{
-			var board = new Board();
-			board.title = options.title;
-			board.accessibility = options.accessibility;
+			var board = Board.Create(options);
+
 			board.Add(new NoteEntry("Fresh board!"));
 
 			PinboardDatabase.Current.AddBoard(board);
@@ -171,10 +170,31 @@ namespace Pinboard
 				return;
 			}
 
-			PinboardDatabase.Current.WillModifyBoard(selectedBoard);
+			PinboardDatabase.Current.WillModifyBoard(selectedBoard, "Create entry");
 			selectedBoard.Add(entry);
+			
+		
+		}
 
-			//PinboardDatabase.SaveBoards();
+		public static void TryCreateEntry(Entry template)
+		{
+			updateActions.Enqueue(() =>
+			{
+				if (selectedBoard == null)
+				{
+					Debug.LogError("No board selected, cannot create entries.");
+					return;
+				}
+
+				var entry = template.Clone();
+				entry.IsDirty = true;
+			
+				PinboardDatabase.Current.WillModifyBoard(selectedBoard, "Paste entry");
+				selectedBoard.Add(entry);
+
+				PinboardDatabase.Current.Save();
+			});
+			
 		}
 
 		public static void TryDeleteEntry(Entry item, Board board)
@@ -182,7 +202,7 @@ namespace Pinboard
 			if (board == null || item == null)
 				return;
 
-			PinboardDatabase.Current.DeleteItemFromBoard(item, board);
+			PinboardDatabase.Current.DeleteEntryFromBoard(item, board);
 		}
 
 
