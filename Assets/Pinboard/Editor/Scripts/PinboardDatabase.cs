@@ -72,6 +72,7 @@ namespace Pinboard
 		public static PinboardEvent onDatabaseModified = delegate { };
 		public static PinboardEvent onDatabaseSaved = delegate { };
 
+		
 		private Dictionary<string, SerializedBoardContainer> serializedBoardContainers = new Dictionary<string, SerializedBoardContainer>();
 		private Dictionary<string, BoardEntryJsonContainer> entryContainers = new Dictionary<string, BoardEntryJsonContainer>();
 
@@ -86,8 +87,6 @@ namespace Pinboard
 		public int BoardCount => boards.Count;
 
 		private bool shouldSaveOnEditorUpdate = false;
-
-		private bool isLoaded = false;
 
 		private void OnEnable()
 		{
@@ -423,7 +422,6 @@ namespace Pinboard
 
 		public void Load()
 		{
-			isLoaded = true;
 
 			Unload();
 
