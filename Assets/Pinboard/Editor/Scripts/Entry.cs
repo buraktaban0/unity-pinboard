@@ -8,8 +8,8 @@ namespace Pinboard
 	[System.Serializable]
 	public abstract class Entry
 	{
-		
-		public bool IsDirty { get; set; }
+
+		public bool IsDirty { get; set; } = true;
 
 		public abstract string ShortVisibleName { get; }
 

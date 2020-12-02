@@ -77,15 +77,27 @@ namespace Pinboard
 
 		static PinboardCore()
 		{
-			Initialize();
+			InitializeTypes();
+
+			updateActions.Enqueue(Initialize);
+
+			EditorApplication.update += EditorUpdate;
 		}
 
+		private static Queue<Action> updateActions = new Queue<Action>();
+
+		private static void EditorUpdate()
+		{
+			if (updateActions.Count > 0)
+			{
+				var act = updateActions.Dequeue();
+				act?.Invoke();
+			}
+		}
 
 		public static void Initialize()
 		{
-			InitializeConfig();
-
-			InitializeTypes();
+			//InitializeConfig();
 
 			var currentDatabase = PinboardDatabase.Current;
 			currentDatabase.Load();
@@ -184,6 +196,11 @@ namespace Pinboard
 		public static void ClearAllBoards()
 		{
 			PinboardCore.Initialize();
+			foreach (var board in PinboardDatabase.Current.Boards.ToList())
+			{
+				PinboardDatabase.Current.DeleteBoard(board);
+			}
+
 			//PinboardDatabase.boards.ToList().ForEach(PinboardDatabase.DeleteBoard);
 			PinboardWindow.Instance?.Refresh();
 		}

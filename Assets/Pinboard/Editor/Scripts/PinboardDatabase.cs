@@ -21,33 +21,36 @@ namespace Pinboard
 		private const string KEY_IDS = "PINBOARD_BOARD_IDS";
 		private const string KEY_ID = "PINBOARD_BOARD";
 
+
 		private static PinboardDatabase _current;
 
 		public static PinboardDatabase Current
 		{
 			get
 			{
-				if (_current == null)
+				if (!_current)
 				{
-					var databases = Resources.FindObjectsOfTypeAll<PinboardDatabase>().ToList();
-					for (int i = databases.Count - 1; i >= 1; i--)
-					{
-						if (databases[i] == null)
-							continue;
+					// var databases = Resources.FindObjectsOfTypeAll<PinboardDatabase>().ToList();
+					// for (int i = databases.Count - 1; i >= 1; i--)
+					// {
+					// 	if (databases[i] == null)
+					// 		continue;
+					//
+					// 	DestroyImmediate(databases[i]);
+					//
+					// 	databases.RemoveAt(i);
+					// }
 
-						DestroyImmediate(databases[i]);
+					// if (databases.Count > 0)
+					// {
+					// 	_current = databases.First();
+					// }
+					// else
+					// {
+					// 	_current = ScriptableObject.CreateInstance<PinboardDatabase>();
+					// }
 
-						databases.RemoveAt(i);
-					}
-
-					if (databases.Count > 0)
-					{
-						_current = databases.First();
-					}
-					else
-					{
-						_current = ScriptableObject.CreateInstance<PinboardDatabase>();
-					}
+					_current = ScriptableObject.CreateInstance<PinboardDatabase>();
 				}
 
 				return _current;
@@ -62,16 +65,17 @@ namespace Pinboard
 		private static void OnBeforeAssemblyReload()
 		{
 			//Debug.Log("OnBeforeAssemblyReload ");
-			Current.Save();
+			if (_current)
+				Current.Save();
 		}
 
-		public PinboardBoardEvent onBoardAdded = delegate { };
-		public PinboardBoardEvent onBoardDeleted = delegate { };
-		public PinboardEvent onDatabaseModified = delegate { };
-		public PinboardEvent onDatabaseSaved = delegate { };
+		public static PinboardBoardEvent onBoardAdded = delegate { };
+		public static PinboardBoardEvent onBoardDeleted = delegate { };
+		public static PinboardEvent onDatabaseModified = delegate { };
+		public static PinboardEvent onDatabaseSaved = delegate { };
 
 		private Dictionary<string, SerializedBoardContainer> serializedBoardContainers;
-		private Dictionary<string, BoardEntryJsonContainer> entryContainer;
+		private Dictionary<string, BoardEntryJsonContainer> entryContainers;
 
 		private Dictionary<string, Board> boardsById;
 		private Dictionary<string, Entry> entriesById;
@@ -87,13 +91,9 @@ namespace Pinboard
 
 		private void OnEnable()
 		{
-			if (Current != this && null != this)
-			{
-				DestroyImmediate(this);
-				return;
-			}
-
 			EditorApplication.update += EditorUpdate;
+
+			RefreshBoardEntryConnections();
 		}
 
 		private void OnDisable()
@@ -105,8 +105,8 @@ namespace Pinboard
 		{
 			if (shouldSaveOnEditorUpdate)
 			{
-				//Save();
 				shouldSaveOnEditorUpdate = false;
+				Save();
 			}
 		}
 
@@ -118,7 +118,20 @@ namespace Pinboard
 		{
 			//Save();
 
+			RefreshBoardEntryConnections();
 			shouldSaveOnEditorUpdate = true;
+		}
+
+
+		private void RefreshBoardEntryConnections()
+		{
+			foreach (var board in boards)
+			{
+				foreach (var boardEntry in board.entries)
+				{
+					boardEntry.board = board;
+				}
+			}
 		}
 
 
@@ -144,10 +157,6 @@ namespace Pinboard
 		public Board GetBoard(string id)
 		{
 			var board = boards.FirstOrDefault(b => b.id == id);
-
-			if (board == null)
-				throw new Exception($"Board with id {id} not found! Check with 'HasBoard' before.");
-
 			return board;
 		}
 
@@ -254,7 +263,7 @@ namespace Pinboard
 
 		private void SaveEntryToAssetDatabase(Entry entry)
 		{
-			if (!entryContainer.TryGetValue(entry.id, out var container))
+			if (!entryContainers.TryGetValue(entry.id, out var container))
 			{
 				container = ScriptableObject.CreateInstance<BoardEntryJsonContainer>();
 				AssetDatabase.CreateAsset(container, PinboardCore.DIR_DATA + "/" + entry.id + ".asset");
@@ -325,9 +334,9 @@ namespace Pinboard
 			var board = boardsById[id];
 			foreach (var entry in board.entries)
 			{
-				var entryContainer = this.entryContainer[entry.id];
+				var entryContainer = this.entryContainers[entry.id];
 				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(entryContainer));
-				this.entryContainer.Remove(entry.id);
+				this.entryContainers.Remove(entry.id);
 			}
 		}
 
@@ -351,8 +360,19 @@ namespace Pinboard
 			}
 		}
 
+		public void Unload()
+		{
+			boards?.Clear();
+			boardsById?.Clear();
+			entriesById?.Clear();
+			serializedBoardContainers?.Clear();
+			entryContainers?.Clear();
+		}
+
 		public void Load()
 		{
+			Unload();
+
 			LoadAllFromAssetDatabase();
 			LoadAllFromEditorPrefsWithContext("");
 			LoadAllFromEditorPrefsWithContext(PinboardCore.ProjectID);
@@ -377,10 +397,10 @@ namespace Pinboard
 				serializedBoardContainers[serializedBoards[i].id] = boardContainers[i];
 			}
 
-			this.entryContainer = new Dictionary<string, BoardEntryJsonContainer>();
+			this.entryContainers = new Dictionary<string, BoardEntryJsonContainer>();
 			for (var i = 0; i < entryContainers.Count; i++)
 			{
-				this.entryContainer[entries[i].id] = entryContainers[i];
+				this.entryContainers[entries[i].id] = entryContainers[i];
 			}
 
 

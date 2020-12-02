@@ -12,7 +12,7 @@ namespace Pinboard
 	[System.Serializable]
 	public class Board
 	{
-		public bool IsDirty { get; set; }
+		public bool IsDirty { get; set; } = true;
 
 		public string id = Guid.Get();
 
@@ -44,13 +44,15 @@ namespace Pinboard
 
 		public void Add(Entry entry)
 		{
+			entry.board = this;
 			entries.Add(entry);
 			IsDirty = true;
 		}
 
-		public void Remove(Entry item)
+		public void Remove(Entry entry)
 		{
-			entries.Remove(item);
+			entry.board = null;
+			entries.Remove(entry);
 			IsDirty = true;
 		}
 

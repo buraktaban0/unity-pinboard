@@ -73,10 +73,10 @@ namespace Pinboard
 
 			MakeScrollList();
 
-			PinboardDatabase.Current.onBoardAdded += OnBoardAdded;
-			PinboardDatabase.Current.onBoardDeleted += OnBoardDeleted;
-			PinboardDatabase.Current.onDatabaseModified += OnBoardsModified;
-			PinboardDatabase.Current.onDatabaseSaved += OnDatabaseSaved;
+			PinboardDatabase.onBoardAdded += OnBoardAdded;
+			PinboardDatabase.onBoardDeleted += OnBoardDeleted;
+			PinboardDatabase.onDatabaseModified += OnBoardsModified;
+			PinboardDatabase.onDatabaseSaved += OnDatabaseSaved;
 
 			this.Refresh();
 		}
@@ -84,10 +84,10 @@ namespace Pinboard
 
 		private void OnDisable()
 		{
-			PinboardDatabase.Current.onBoardAdded -= OnBoardAdded;
-			PinboardDatabase.Current.onBoardDeleted -= OnBoardDeleted;
-			PinboardDatabase.Current.onDatabaseModified -= OnBoardsModified;
-			PinboardDatabase.Current.onDatabaseSaved -= OnDatabaseSaved;
+			PinboardDatabase.onBoardAdded -= OnBoardAdded;
+			PinboardDatabase.onBoardDeleted -= OnBoardDeleted;
+			PinboardDatabase.onDatabaseModified -= OnBoardsModified;
+			PinboardDatabase.onDatabaseSaved -= OnDatabaseSaved;
 		}
 
 		private void OnDatabaseSaved()
@@ -177,8 +177,6 @@ namespace Pinboard
 
 		private void TryCreateNewBoard(DropdownMenuAction action)
 		{
-			Debug.Log("Try Create board");
-
 			CreateBoardPopup.ShowDialog();
 		}
 
@@ -194,7 +192,7 @@ namespace Pinboard
 				pop.menu.AppendAction("Delete Board", action =>
 				{
 					var delete = EditorUtility.DisplayDialog("Delete Board",
-					                                         $"Deleting a board is destructive and irreversible, do you want to continue to delete \"{currentBoard.title}\"?",
+					                                         $"Do you want to continue to delete \"{currentBoard.title}\"?",
 					                                         "Yes", "No");
 
 					if (delete)
@@ -286,8 +284,8 @@ namespace Pinboard
 			// itemsList.unbindItem = UnbindItem;
 			itemsList.reorderable = true;
 			itemsList.itemHeight = 22;
+			itemsList.selectionType = SelectionType.Multiple;
 			itemsList.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
-			itemsList.selectionType = SelectionType.None;
 			itemsList.onSelectionChange += OnItemSelectionChange;
 			itemsList.RegisterCallback<GeometryChangedEvent>(ListGeoChanged);
 
@@ -351,6 +349,8 @@ namespace Pinboard
 
 		public void Refresh()
 		{
+			PinboardDatabase.Current.Load();
+
 			if (PinboardDatabase.Current.BoardCount < 1)
 			{
 				SetBoard(null);

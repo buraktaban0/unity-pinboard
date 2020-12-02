@@ -25,7 +25,7 @@ namespace Pinboard
 
 		public static void ShowDialog()
 		{
-			var window = ScriptableObject.CreateInstance<CreateBoardPopup>();
+			var window = GetWindow<CreateBoardPopup>();
 
 			window.titleContent = new GUIContent("Create Board");
 
@@ -33,7 +33,7 @@ namespace Pinboard
 			window.minSize = size;
 			window.maxSize = size;
 
-			window.Show();
+			window.ShowUtility();
 		}
 
 
@@ -98,7 +98,7 @@ namespace Pinboard
 			row1.style.marginTop = 8;
 			row1.style.marginBottom = 8;
 			var nameField = new TextField(64, false, false, '*') {value = "New Board"};
-			
+
 			row1.Add(nameField);
 
 			root.Add(row1);
@@ -117,19 +117,17 @@ namespace Pinboard
 				PinboardCore.TryCreateBoard(createBoardOptions);
 				this.Close();
 			}) {text = "Create"};
-			
+
 
 			//row2.Add(cancelButton);
 			row2.Add(createButton);
 
 			root.Add(row2);
-
 		}
 
 
 		private static void OnClickCreate()
 		{
 		}
-
 	}
 }
