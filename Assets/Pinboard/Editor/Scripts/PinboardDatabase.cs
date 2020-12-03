@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Pinboard.Items;
 using UnityEditor;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -31,25 +32,23 @@ namespace Pinboard
 				if (!_current)
 				{
 					var databases = Resources.FindObjectsOfTypeAll<PinboardDatabase>().ToList();
-					for (int i = databases.Count - 1; i >= 1; i--)
+
+					foreach (var db in databases)
 					{
-						if (databases[i] == null)
-							continue;
-
-						DestroyImmediate(databases[i]);
-
-						databases.RemoveAt(i);
+						DestroyImmediate(db);
 					}
 
-					if (databases.Count > 0)
-					{
-						_current = databases.First();
-					}
-					else
-					{
-						_current = ScriptableObject.CreateInstance<PinboardDatabase>();
-					}
+					_current = ScriptableObject.CreateInstance<PinboardDatabase>();
+
+					_current.isMainDatabase = true;
+					// Rerun OnEnable with the awareness of being the main database.
+					_current.OnEnable();
+					
+					_current.Load();
+
+					Debug.Log("VAR");
 				}
+
 
 				return _current;
 			}
@@ -72,15 +71,26 @@ namespace Pinboard
 		public static PinboardEvent onDatabaseModified = delegate { };
 		public static PinboardEvent onDatabaseSaved = delegate { };
 
+
+		private static PinboardDatabase preSerializationSnapshot = null;
 		
-		private Dictionary<string, SerializedBoardContainer> serializedBoardContainers = new Dictionary<string, SerializedBoardContainer>();
-		private Dictionary<string, BoardEntryJsonContainer> entryContainers = new Dictionary<string, BoardEntryJsonContainer>();
+
+		[SerializeField]
+		private bool isMainDatabase = false;
+
+		private Dictionary<string, SerializedBoardContainer> serializedBoardContainers =
+			new Dictionary<string, SerializedBoardContainer>();
+
+		private Dictionary<string, BoardEntryJsonContainer> entryContainers =
+			new Dictionary<string, BoardEntryJsonContainer>();
 
 		private Dictionary<string, Board> boardsById = new Dictionary<string, Board>();
 		private Dictionary<string, Entry> entriesById = new Dictionary<string, Entry>();
 
 		[SerializeField]
 		private List<Board> boards = new List<Board>();
+
+		private List<Entry> EntriesFlat => boards.SelectMany(b => b.entries).ToList();
 
 		public ReadOnlyCollection<Board> Boards => boards.AsReadOnly();
 
@@ -90,6 +100,15 @@ namespace Pinboard
 
 		private void OnEnable()
 		{
+			if (!isMainDatabase)
+				return;
+
+			if (_current != null && _current != this)
+			{
+				DestroyImmediate(this);
+				return;
+			}
+
 			EditorApplication.update += EditorUpdate;
 
 			RefreshBoardEntryConnections();
@@ -97,6 +116,9 @@ namespace Pinboard
 
 		private void OnDisable()
 		{
+			if (!isMainDatabase)
+				return;
+
 			EditorApplication.update -= EditorUpdate;
 		}
 
@@ -111,14 +133,69 @@ namespace Pinboard
 
 		public void OnBeforeSerialize()
 		{
+			if (!isMainDatabase)
+			{
+				return;
+			}
+
+			// EntriesFlat.ForEach(e => Debug.Log("before " + e.ShortVisibleName));
+
+			
+			// Debug.Log("before take");
+			
+			if(preSerializationSnapshot)
+				DestroyImmediate(preSerializationSnapshot);
+			
+			// To prevent instance from being able to take snapshots and thus blocking the application recursively.
+			this.isMainDatabase = false;
+			preSerializationSnapshot = Instantiate(this);
+			this.isMainDatabase = true;
 		}
 
 		public void OnAfterDeserialize()
 		{
+			if (!isMainDatabase)
+			{
+				return;
+			}
+
 			//Save();
 
+			// Debug.Log("after");
+
 			RefreshBoardEntryConnections();
+
+			if (preSerializationSnapshot != null)
+			{
+				// Debug.Log("after compare");
+				ComparePreSerializationSnapshot();
+				preSerializationSnapshot = null;
+			}
+
+
 			shouldSaveOnEditorUpdate = true;
+		}
+
+		private void ComparePreSerializationSnapshot()
+		{
+			var preBoards = preSerializationSnapshot.boards;
+			var postBoards = this.boards;
+
+			var preFlatEntries = preSerializationSnapshot.EntriesFlat;
+			var postFlatEntries = this.EntriesFlat;
+
+			//preFlatEntries.ForEach(e => Debug.Log("pre " + e.ShortVisibleName));
+			//postFlatEntries.ForEach(e => Debug.Log("pos " + e.ShortVisibleName));
+
+			postBoards.Where(b => preBoards.Any(b1 => b1.id == b.id) == false).ToList()
+			          .ForEach(b => { b.IsDirty = true; });
+
+			postFlatEntries.Where(e => preFlatEntries.Any(e1 => e1.id == e.id) == false).ToList()
+			               .ForEach(e =>
+			               {
+				               e.IsDirty = true;
+				               //Debug.Log(e.ShortVisibleName + " was dirty");
+			               });
 		}
 
 
@@ -201,6 +278,8 @@ namespace Pinboard
 					}
 				}
 			}
+
+			Clean();
 
 			AssetDatabase.SaveAssets();
 
@@ -300,6 +379,34 @@ namespace Pinboard
 			EditorPrefs.SetString(key, json);
 		}
 
+
+		private void Clean()
+		{
+			var boardContainers = Utility.LoadAssets<SerializedBoardContainer>();
+			var entryContainers = Utility.LoadAssets<BoardEntryJsonContainer>();
+
+			var globalIds = GetPrefsIdsWithContext("");
+			var projectIds = GetPrefsIdsWithContext(PinboardCore.ProjectID);
+
+			var entriesFlat = EntriesFlat;
+
+			boardContainers.Where(c => boards.Any(b => b.id == c.name) == false).ToList().ForEach(c =>
+			{
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(c));
+			});
+
+
+			entryContainers.Where(c => entriesFlat.Any(e => e.id == c.name) == false).ToList().ForEach(c =>
+			{
+				AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(c));
+			});
+
+			globalIds = globalIds.Where(id => boards.Any(b => b.id == id)).ToList();
+			projectIds = projectIds.Where(id => boards.Any(b => b.id == id)).ToList();
+
+			SetPrefsIdsWithContext("", globalIds);
+			SetPrefsIdsWithContext(PinboardCore.ProjectID, projectIds);
+		}
 
 		public void DeleteBoard(Board board) => DeleteBoard(board.id);
 
@@ -422,7 +529,6 @@ namespace Pinboard
 
 		public void Load()
 		{
-
 			Unload();
 
 			LoadAllFromAssetDatabase();
@@ -521,6 +627,20 @@ namespace Pinboard
 		private string GetPrefsIdKey(string id)
 		{
 			return $"{KEY_ID}_{id}";
+		}
+
+		private List<string> GetPrefsIdsWithContext(string ctx)
+		{
+			var key = GetPrefsIdsKeyWithContext(ctx);
+			var val = EditorPrefs.GetString(key);
+			return val.Split(new[] {TOKEN_BREAK}, StringSplitOptions.None).ToList();
+		}
+
+		private void SetPrefsIdsWithContext(string ctx, List<string> ids)
+		{
+			var key = GetPrefsIdsKeyWithContext(ctx);
+			var val = string.Join(TOKEN_BREAK, ids);
+			EditorPrefs.SetString(key, val);
 		}
 
 		public static void CreateAsset(UnityEngine.Object asset, string path)

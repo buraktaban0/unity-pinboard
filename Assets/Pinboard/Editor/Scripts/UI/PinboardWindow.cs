@@ -304,12 +304,14 @@ namespace Pinboard
 			itemsList.makeItem = MakeItem;
 			itemsList.bindItem = BindItem;
 			// itemsList.unbindItem = UnbindItem;
-			itemsList.reorderable = true;
+			//itemsList.reorderable = true;
 			itemsList.itemHeight = 22;
-			itemsList.selectionType = SelectionType.None;
+			//itemsList.showBorder = true;
+			//itemsList.showBoundCollectionSize = true;
+			//itemsList.selectionType = SelectionType.Single;
 			//itemsList.selectionType = SelectionType.Multiple;
 			itemsList.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
-			itemsList.onSelectionChange += OnItemSelectionChange;
+			itemsList.onSelectionChange += OnEntrySelectionChange;
 			itemsList.RegisterCallback<GeometryChangedEvent>(ListGeoChanged);
 
 			root.Add(itemsList);
@@ -369,6 +371,7 @@ namespace Pinboard
 		private void BindItem(VisualElement element, int index)
 		{
 			element.userData = visibleItems[index];
+			element.Q<Image>().image = visibleItems[index].GetIcon();
 			visibleItems[index].BindVisualElement(element);
 		}
 
@@ -378,7 +381,7 @@ namespace Pinboard
 		// 	currentBoard.items[index].UnbindVisualElement(element)
 		// }
 
-		private void OnItemSelectionChange(IEnumerable<object> selection)
+		private void OnEntrySelectionChange(IEnumerable<object> selection)
 		{
 			if (!selection.Any())
 				return;

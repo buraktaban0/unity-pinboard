@@ -103,7 +103,6 @@ namespace Pinboard
 			title = board.title;
 			createdBy = board.createdBy;
 			createdAt = board.createdAt;
-			Debug.Log(board.entries.Count);
 			entryIds = board.entries.Select(item => item.id).ToArray();
 		}
 	}

@@ -28,11 +28,10 @@ namespace Pinboard.Items
 			this.content = content;
 		}
 
+		public override Texture GetIcon() => PinboardResources.ICON_TEXT;
+
 		public override void BindVisualElement(VisualElement el)
 		{
-			var icon = el.Q<Image>();
-			icon.image = PinboardResources.ICON_TEXT;
-
 			var lbl = new Label(content);
 			lbl.style.textOverflow = TextOverflow.Ellipsis;
 			lbl.name = "simple-text-content";
@@ -53,17 +52,18 @@ namespace Pinboard.Items
 		public override bool Create()
 		{
 			popupTitle = "Create Note";
-			return EditOrUpdate();
+			return EditOrUpdate(false);
 		}
 
-		public override bool EditOrUpdate()
+		public override bool EditOrUpdate(bool recordUndoState)
 		{
 			if (isBeingEdited)
 				return false;
 
 			isBeingEdited = true;
 
-			PinboardDatabase.Current.WillModifyEntry(this);
+			if (recordUndoState)
+				PinboardDatabase.Current.WillModifyEntry(this);
 
 			var wasEdited = TextEditPopup.ShowPopup(popupTitle, this.content, s =>
 			{
@@ -82,7 +82,7 @@ namespace Pinboard.Items
 		{
 			base.OnDoubleClick();
 
-			if (this.EditOrUpdate())
+			if (this.EditOrUpdate(true))
 			{
 				//PinboardDatabase.SaveBoards();
 			}
@@ -92,7 +92,7 @@ namespace Pinboard.Items
 		{
 			base.PopulateContextualMenu(evt);
 
-			evt.menu.AppendAction("Edit", action => { this.EditOrUpdate(); });
+			evt.menu.AppendAction("Edit", action => { this.EditOrUpdate(true); });
 			evt.menu.AppendAction("Copy", action =>
 			{
 				PinboardClipboard.Entry = this;

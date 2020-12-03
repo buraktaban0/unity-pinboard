@@ -33,13 +33,15 @@ namespace Pinboard
 		public long createdAt = Utility.GetUnixTimestamp();
 		public DateTime CreationTime => Utility.FromUnixToLocal(createdAt);
 
+		public abstract Texture GetIcon();
+
 		public abstract void BindVisualElement(VisualElement el);
 
 		public abstract void UnbindVisualElement(VisualElement el);
 
 		public abstract bool Create();
 
-		public abstract bool EditOrUpdate();
+		public abstract bool EditOrUpdate(bool recordUndoState);
 
 		public virtual void OnClick()
 		{

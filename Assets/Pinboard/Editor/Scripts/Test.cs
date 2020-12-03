@@ -49,6 +49,11 @@ namespace Pinboard
 			Debug.Log(GUIUtility.systemCopyBuffer);
 		}
 
+		[MenuItem("Test/Count databases")]
+		public static void CountDatabases()
+		{
+			Debug.Log(Resources.FindObjectsOfTypeAll<PinboardDatabase>().Length);
+		}
 
 		[MenuItem("Test/loop")]
 		public static void TestLoop()
