@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
 
 namespace Pinboard
@@ -38,6 +39,7 @@ namespace Pinboard
 
 		private void OnEnable()
 		{
+			
 			var root = this.rootVisualElement;
 
 			root = new VisualElement();

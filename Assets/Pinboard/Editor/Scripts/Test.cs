@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Pinboard.Items;
+using System.Reflection;
+using Pinboard.Entries;
 using UnityEditor;
 using UnityEngine;
 
@@ -47,6 +48,52 @@ namespace Pinboard
 		public static void GetClipboard()
 		{
 			Debug.Log(GUIUtility.systemCopyBuffer);
+		}
+		
+		[MenuItem("Test/log id ")]
+		public static void LogId()
+		{
+			Debug.Log(Selection.activeObject.GetInstanceID() + "  " + Selection.activeObject.name);
+		}
+
+
+		[MenuItem("Test/Log menu items")]
+		public static void LogMenuItems()
+		{
+			var attrType = typeof(MenuItem);
+			int a = 0;
+			int t = 0;
+			int m = 0;
+			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				a++;
+				foreach (var type in assembly.GetTypes())
+				{
+					t++;
+					foreach (var method in type.GetMethods())
+					{
+						var attr = method.GetCustomAttribute(typeof(MenuItem));
+
+						if (attr == null)
+						{
+							continue;
+						}
+
+						var menuAttr = attr as MenuItem;
+
+						if (menuAttr == null)
+							continue;
+
+						
+						var path = menuAttr.menuItem;
+						Debug.Log(path);
+					}
+				}
+			}
+
+			Debug.Log(EditorGUIUtility.SerializeMainMenuToString());
+
+			Debug.Log(a + "  " + t + "  " + m);
 		}
 
 		[MenuItem("Test/Count databases")]

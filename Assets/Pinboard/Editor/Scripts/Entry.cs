@@ -61,6 +61,8 @@ namespace Pinboard
 			
 		}
 
+		public abstract void CopySelfToClipboard();
+
 		public abstract Entry Clone();
 	}
 }

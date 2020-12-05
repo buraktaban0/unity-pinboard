@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Pinboard.Items
+namespace Pinboard.Entries
 {
 	[System.Serializable]
 	[EntryType(visibleName = "Note")]
@@ -93,11 +93,13 @@ namespace Pinboard.Items
 			base.PopulateContextualMenu(evt);
 
 			evt.menu.AppendAction("Edit", action => { this.EditOrUpdate(true); });
-			evt.menu.AppendAction("Copy", action =>
-			{
-				PinboardClipboard.Entry = this;
-				PinboardClipboard.SystemBuffer = this.content;
-			});
+			
+		}
+
+		public override void CopySelfToClipboard()
+		{
+			PinboardClipboard.Entry = this;
+			PinboardClipboard.SystemBuffer = this.content;
 		}
 
 		public override Entry Clone()

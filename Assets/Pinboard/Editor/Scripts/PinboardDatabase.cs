@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using Pinboard.Items;
+using Pinboard.Entries;
 using UnityEditor;
 using UnityEditor.VersionControl;
 using UnityEngine;
@@ -45,8 +45,6 @@ namespace Pinboard
 					_current.OnEnable();
 					
 					_current.Load();
-
-					Debug.Log("VAR");
 				}
 
 

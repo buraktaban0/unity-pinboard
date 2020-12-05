@@ -10,8 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b597ae6855947b18f3cc558a0c7557c, type: 3}
-  m_Name: 2e159a26f0e44f33a86381503ed0b72f
+  m_Name: 13dda5fce6ac46b1b85862a60354ac32
   m_EditorClassIdentifier: 
-  type: Pinboard.Items.NoteEntry
-  data: '{"id":"2e159a26f0e44f33a86381503ed0b72f","author":"Burak Taban","createdAt":1607031810,"content":"Fresh
-    board!"}'
+  type: Pinboard.Entries.AssetShortcutEntry
+  data: '{"id":"13dda5fce6ac46b1b85862a60354ac32","author":"Burak Taban","createdAt":1607173239,"instanceId":16674,"sceneInstanceId":-1,"cachedPath":"Assets/Materials/Skybox_Mat.mat","cachedType":"Material","cachedName":"Skybox_Mat"}'

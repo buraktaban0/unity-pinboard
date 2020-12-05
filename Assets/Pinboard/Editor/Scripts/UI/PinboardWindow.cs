@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pinboard.Items;
+using Pinboard.Entries;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 namespace Pinboard
@@ -80,9 +82,11 @@ namespace Pinboard
 			PinboardDatabase.onDatabaseModified += OnBoardsModified;
 			PinboardDatabase.onDatabaseSaved += OnDatabaseSaved;
 
+			EditorSceneManager.sceneLoaded += OnEditorSceneLoaded;
+			EditorSceneManager.sceneOpened += OnEditorSceneOpened;
+
 			this.Refresh();
 		}
-
 
 		private void OnDisable()
 		{
@@ -90,7 +94,22 @@ namespace Pinboard
 			PinboardDatabase.onBoardDeleted -= OnBoardDeleted;
 			PinboardDatabase.onDatabaseModified -= OnBoardsModified;
 			PinboardDatabase.onDatabaseSaved -= OnDatabaseSaved;
+
+			EditorSceneManager.sceneLoaded -= OnEditorSceneLoaded;
+			EditorSceneManager.sceneOpened -= OnEditorSceneOpened;
+
 		}
+
+		private void OnEditorSceneOpened(Scene scene, OpenSceneMode mode)
+		{
+			Refresh();
+		}
+
+		private void OnEditorSceneLoaded(Scene scene, LoadSceneMode mode)
+		{
+			Refresh();
+		}
+
 
 		private void OnDatabaseSaved()
 		{
@@ -326,10 +345,12 @@ namespace Pinboard
 			{
 				var entry = root.userData as Entry;
 				entry.PopulateContextualMenu(evt);
-				
+
 				evt.menu.AppendSeparator();
-				
-				evt.menu.AppendAction("Delete Entry",
+
+				evt.menu.AppendAction("Copy", action => { entry.CopySelfToClipboard(); });
+
+				evt.menu.AppendAction("Delete",
 				                      action =>
 				                      {
 					                      var b = EditorUtility.DisplayDialog(
@@ -353,12 +374,10 @@ namespace Pinboard
 						Refresh();
 					});
 				}
-
 			}));
 
-			root.AddManipulator(new ClickActionsManipulator(() => { },
+			root.AddManipulator(new ClickActionsManipulator(() => { (root.userData as Entry).OnClick(); },
 			                                                () => { (root.userData as Entry).OnDoubleClick(); }));
-
 			var img = new Image();
 			img.style.width = 15;
 			img.style.height = 15;
@@ -423,7 +442,7 @@ namespace Pinboard
 
 				SetBoard(lastOpenBoard);
 			}
-			
+
 			ValidateSearch();
 		}
 

@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b597ae6855947b18f3cc558a0c7557c, type: 3}
-  m_Name: 429e710dffbe45c0bd96cdedddef6f94
+  m_Name: 0c743c2f40154fe3800042f3827f9eee
   m_EditorClassIdentifier: 
-  type: Pinboard.Items.NoteEntry
-  data: '{"id":"429e710dffbe45c0bd96cdedddef6f94","author":"Burak Taban","createdAt":1607033014,"content":"Empty
-    note"}'
+  type: Pinboard.Entries.AssetShortcutEntry
+  data: '{"id":"0c743c2f40154fe3800042f3827f9eee","author":"Burak Taban","createdAt":1607178248,"instanceId":22024,"sceneInstanceId":17756,"cachedPath":"","cachedType":"UnityEngine.GameObject","cachedName":"Directional
+    Light"}'

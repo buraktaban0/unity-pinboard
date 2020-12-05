@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Pinboard.Items;
+using Pinboard.Entries;
 using UnityEditor;
 using UnityEngine;
 
@@ -147,6 +147,8 @@ namespace Pinboard
 
 			return board;
 		}
+
+		public static void TryCreateEntry<T>() where T : Entry => TryCreateEntry(typeof(T));
 
 		public static void TryCreateEntry(Type entryType)
 		{
