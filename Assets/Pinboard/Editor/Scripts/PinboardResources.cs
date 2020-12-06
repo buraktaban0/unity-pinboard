@@ -17,6 +17,9 @@ namespace Pinboard
 		public static readonly Texture ICON_BROKEN;
 		public static readonly Texture ICON_INVALID_SCENE;
 		public static readonly Texture ICON_DELETE;
+		public static readonly Texture ICON_CLIPBOARD;
+		public static readonly Texture ICON_COPY;
+		public static readonly Texture ICON_PASTE;
 
 		static PinboardResources()
 		{
@@ -33,6 +36,9 @@ namespace Pinboard
 			ICON_BROKEN = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/broken.png");
 			ICON_INVALID_SCENE = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/invalid_scene.png");
 			ICON_DELETE = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/delete.png");
+			ICON_CLIPBOARD = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/clipboard.png");
+			ICON_COPY = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/copy.png");
+			ICON_PASTE = AssetDatabase.LoadAssetAtPath<Texture>(iconsDir + "/paste.png");
 			
 		}
 	}

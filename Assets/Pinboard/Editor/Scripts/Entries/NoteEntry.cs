@@ -60,25 +60,21 @@ namespace Pinboard.Entries
 
 		public override bool EditOrUpdate(bool recordUndoState)
 		{
-			if (isBeingEdited)
-				return false;
 
-			isBeingEdited = true;
-
-			if (recordUndoState)
-				PinboardDatabase.Current.WillModifyEntry(this);
-
-			var wasEdited = TextEditPopup.ShowPopup(popupTitle, this.content, s =>
+			TextEditPopup.ShowPopup(this, popupTitle, this.content, s =>
 			{
+				
+				if (recordUndoState)
+				{
+					PinboardDatabase.Current.WillModifyEntry(this);
+				}
+
 				popupTitle = "Update Note";
 				this.content = s;
+				this.IsDirty = true;
 			});
-			isBeingEdited = false;
 
-			if (wasEdited)
-				IsDirty = true;
-
-			return wasEdited;
+			return true;
 		}
 
 		public override void OnDoubleClick()

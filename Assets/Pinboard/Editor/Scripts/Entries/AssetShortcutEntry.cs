@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Pinboard.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -312,6 +313,10 @@ namespace Pinboard.Entries
 			if ((!IsSceneObject && obj))
 			{
 				evt.menu.AppendAction("Select Asset", action => TrySelectObject());
+				evt.menu.AppendAction("Edit Asset", action =>
+				{
+					UnityObjectEditorContainerWindow.Show(obj);
+				});
 			}
 			else if (IsSceneObject)
 			{

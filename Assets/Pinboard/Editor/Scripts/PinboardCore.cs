@@ -20,6 +20,9 @@ namespace Pinboard
 		public static string PATH_CFG = DIR_ROOT + "/PinboardConfig.asset";
 		public static string DIR_PROJECT => Application.dataPath.Replace("Assets", "");
 
+		
+		public static readonly BoardAccessibility[] ALLOWED_ACCESSIBILITIES = {BoardAccessibility.ProjectPublic};
+		
 		private static PinboardConfig _config;
 
 		public static PinboardConfig Config
@@ -104,7 +107,7 @@ namespace Pinboard
 		public static void OnAssetDatabaseModifiedExternally()
 		{
 			var db = PinboardDatabase.Current;
-			db.Load();
+			db.LoadIfNecessary();
 
 			PinboardWindow.Instance?.RefreshNow();
 		}

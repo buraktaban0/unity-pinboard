@@ -140,7 +140,7 @@ namespace Pinboard
 
 			PinboardDatabase.Current.WillModifyEntry(new NoteEntry("This is my content"));
 
-			TextEditPopup.ShowPopup("asd", "qwe", s => { Debug.Log("done"); });
+			TextEditPopup.ShowPopup(new object(), "asd", "qwe", s => { Debug.Log("done"); });
 			Debug.Log("after");
 		}
 

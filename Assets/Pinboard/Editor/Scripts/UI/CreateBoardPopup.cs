@@ -56,9 +56,10 @@ namespace Pinboard
 			dropdown.text = names[0];
 			dropdown.variant = ToolbarMenu.Variant.Popup;
 
-			BoardAccessibility accessibility = values[0];
+			BoardAccessibility accessibility = PinboardCore.ALLOWED_ACCESSIBILITIES.First();
+			dropdown.text = accessibility.ToString().SplitCamelCase();
 
-			var descLbl = new Label(descs[0]);
+			var descLbl = new Label(BoardAccessibilityDesc.Get(accessibility));
 			descLbl.style.marginLeft = 8;
 			descLbl.style.flexShrink = 1;
 			descLbl.style.flexWrap = Wrap.Wrap;
@@ -74,9 +75,9 @@ namespace Pinboard
 					                           descLbl.text = BoardAccessibilityDesc.Get(val);
 					                           dropdown.text = name;
 				                           },
-				                           action => action.name == dropdown.text
+				                           action => PinboardCore.ALLOWED_ACCESSIBILITIES.Contains(val) ? action.name == dropdown.text
 					                           ? DropdownMenuAction.Status.Checked
-					                           : DropdownMenuAction.Status.Normal,
+					                           : DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled,
 				                           DropdownMenuAction.Status.Normal);
 			}
 

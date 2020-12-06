@@ -23,6 +23,7 @@ namespace Pinboard
 		public const string CLASS_LIST_ITEM_ROOT = "list-item-root";
 		public const string CLASS_BOARD_TOOLBAR = "board-toolbar";
 
+
 		private static PinboardWindow _instance = null;
 
 		public static PinboardWindow Instance
@@ -192,15 +193,16 @@ namespace Pinboard
 			{
 				pop.menu.AppendAction("Rename Board", action =>
 				{
-					TextEditPopup.ShowPopup("Rename Board", currentBoard.title, s =>
+					var board = currentBoard;
+					TextEditPopup.ShowPopup(currentBoard, "Rename Board", currentBoard.title, s =>
 					{
-						if (currentBoard.title == s.Trim())
+						if (board.title == s.Trim())
 							return;
 
-						PinboardDatabase.Current.WillModifyBoard(currentBoard);
-						currentBoard.title =
+						PinboardDatabase.Current.WillModifyBoard(board);
+						board.title =
 							s.Trim().CorrectlyEnumerate(PinboardDatabase.Current.Boards.Select(b => b.title));
-						currentBoard.IsDirty = true;
+						board.IsDirty = true;
 					});
 				});
 				pop.menu.AppendAction("Delete Board", action =>

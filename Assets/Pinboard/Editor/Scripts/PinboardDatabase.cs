@@ -95,6 +95,7 @@ namespace Pinboard
 		public int BoardCount => boards.Count;
 
 		private bool shouldSaveOnEditorUpdate = false;
+		private bool didModifyAssetDatabase = false;
 
 		private void OnEnable()
 		{
@@ -259,12 +260,15 @@ namespace Pinboard
 
 		public void Save()
 		{
+			didModifyAssetDatabase = false;
+			
 			foreach (var board in boards)
 			{
 				if (board.IsDirty)
 				{
 					SaveBoard(board);
 					board.IsDirty = false;
+					didModifyAssetDatabase = true;
 				}
 
 				foreach (var entry in board.entries)
@@ -273,6 +277,7 @@ namespace Pinboard
 					{
 						SaveEntry(entry);
 						entry.IsDirty = false;
+						didModifyAssetDatabase = true;
 					}
 				}
 			}
@@ -523,6 +528,18 @@ namespace Pinboard
 			entriesById?.Clear();
 			serializedBoardContainers?.Clear();
 			entryContainers?.Clear();
+		}
+
+		public void LoadIfNecessary()
+		{
+			if (didModifyAssetDatabase)
+			{
+				didModifyAssetDatabase = false;
+			}
+			else
+			{
+				Load();
+			}
 		}
 
 		public void Load()

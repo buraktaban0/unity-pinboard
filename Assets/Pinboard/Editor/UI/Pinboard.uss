@@ -56,7 +56,21 @@ Image {
     white-space: nowrap;
 }
 
-Toolbar {
-    
-    
+
+.icon-button {
+    flex-grow: 0;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    padding: 2px;
+}
+
+.icon-button>Image {
+    width: 75%;
+    height: 75%;   
+}
+
+TextInput {
+    -unity-text-align: upper-left;
+    align-self: stretch;
 }
