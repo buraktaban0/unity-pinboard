@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using Pinboard.Entries;
 using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Pinboard
 {
@@ -49,11 +51,40 @@ namespace Pinboard
 		{
 			Debug.Log(GUIUtility.systemCopyBuffer);
 		}
-		
+
 		[MenuItem("Test/log id ")]
 		public static void LogId()
 		{
 			Debug.Log(Selection.activeObject.GetInstanceID() + "  " + Selection.activeObject.name);
+		}
+
+		private static string guid;
+		[MenuItem("Test/Get global id")]
+		public static void GetGlobalId()
+		{
+			Stopwatch sw = new Stopwatch();
+			sw.Start();
+			var s = GlobalObjectId.GetGlobalObjectIdSlow(Selection.activeObject);
+			sw.Stop();
+			Debug.Log(sw.Elapsed.TotalMilliseconds + "  " + s);
+
+			guid = s.ToString();
+
+		}
+		
+		
+		[MenuItem("Test/Get obj from global id")]
+		public static void GetObj()
+		{
+			Stopwatch sw = new Stopwatch();
+			sw.Start();
+			GlobalObjectId.TryParse(guid, out var id);
+			var obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
+			sw.Stop();
+			
+			Debug.Log(sw.Elapsed.TotalMilliseconds + "  " + obj.name);
+			
+			
 		}
 
 
@@ -84,7 +115,7 @@ namespace Pinboard
 						if (menuAttr == null)
 							continue;
 
-						
+
 						var path = menuAttr.menuItem;
 						Debug.Log(path);
 					}

@@ -7,6 +7,8 @@ namespace Pinboard
 
 		public static Entry Entry { get; set; } = null;
 
+		public static UnityEngine.Object UnityObject { get; set; } = null;
+
 		public static string Content { get; set; } = "";
 
 		public static string SystemBuffer

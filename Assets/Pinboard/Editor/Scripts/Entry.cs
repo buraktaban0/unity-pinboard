@@ -33,7 +33,7 @@ namespace Pinboard
 		public long createdAt = Utility.GetUnixTimestamp();
 		public DateTime CreationTime => Utility.FromUnixToLocal(createdAt);
 
-		public abstract Texture GetIcon();
+		//public abstract Texture GetIcon();
 
 		public abstract void BindVisualElement(VisualElement el);
 
@@ -51,9 +51,14 @@ namespace Pinboard
 		{
 		}
 
-		public virtual bool IsValidForSearch(string[] filters)
+		// public virtual bool IsValidForSearch(List<string> filters)
+		// {
+		// 	return false;
+		// }
+
+		public virtual IEnumerable<string> GetSearchKeywords()
 		{
-			return false;
+			yield break;
 		}
 
 		public virtual void PopulateContextualMenu(ContextualMenuPopulateEvent evt)

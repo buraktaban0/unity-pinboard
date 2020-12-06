@@ -86,6 +86,12 @@ namespace Pinboard
 
 		private static Queue<Action> updateActions = new Queue<Action>();
 
+		public static void RunNextFrame(Action action)
+		{
+			updateActions.Enqueue(action);
+		}
+
+
 		private static void EditorUpdate()
 		{
 			if (updateActions.Count > 0)
@@ -93,6 +99,14 @@ namespace Pinboard
 				var act = updateActions.Dequeue();
 				act?.Invoke();
 			}
+		}
+
+		public static void OnAssetDatabaseModifiedExternally()
+		{
+			var db = PinboardDatabase.Current;
+			db.Load();
+
+			PinboardWindow.Instance?.RefreshNow();
 		}
 
 		public static void Initialize()
@@ -130,7 +144,9 @@ namespace Pinboard
 			EntryTypes = new List<Type>(typeof(PinboardCore).Assembly.GetTypes()
 			                                                .Where(type => type.IsSubclassOf(typeof(Entry)) &&
 			                                                               type.IsDefined(
-				                                                               typeof(EntryTypeAttribute), true)));
+				                                                               typeof(EntryTypeAttribute), true) &&
+			                                                               type.GetCustomAttribute<EntryTypeAttribute>()
+			                                                                   .canBeCreatedExplicitly));
 			EntryTypeNames = EntryTypes
 			                 .Select(type => ((EntryTypeAttribute) type.GetCustomAttribute(
 				                         typeof(EntryTypeAttribute), true)).visibleName).ToList();
@@ -174,8 +190,6 @@ namespace Pinboard
 
 			PinboardDatabase.Current.WillModifyBoard(selectedBoard, "Create entry");
 			selectedBoard.Add(entry);
-			
-		
 		}
 
 		public static void TryCreateEntry(Entry template)
@@ -190,13 +204,12 @@ namespace Pinboard
 
 				var entry = template.Clone();
 				entry.IsDirty = true;
-			
+
 				PinboardDatabase.Current.WillModifyBoard(selectedBoard, "Paste entry");
 				selectedBoard.Add(entry);
 
 				PinboardDatabase.Current.Save();
 			});
-			
 		}
 
 		public static void TryDeleteEntry(Entry item, Board board)

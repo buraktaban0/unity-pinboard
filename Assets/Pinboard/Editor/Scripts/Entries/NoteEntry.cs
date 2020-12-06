@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Pinboard.Entries
 {
 	[System.Serializable]
-	[EntryType(visibleName = "Note")]
+	[EntryType("Note",true)]
 	public class NoteEntry : Entry
 	{
 		public override string ShortVisibleName => content.Truncate();
@@ -28,7 +29,7 @@ namespace Pinboard.Entries
 			this.content = content;
 		}
 
-		public override Texture GetIcon() => PinboardResources.ICON_TEXT;
+		//public override Texture GetIcon() => PinboardResources.ICON_TEXT;
 
 		public override void BindVisualElement(VisualElement el)
 		{
@@ -36,6 +37,8 @@ namespace Pinboard.Entries
 			lbl.style.textOverflow = TextOverflow.Ellipsis;
 			lbl.name = "simple-text-content";
 			el.Add(lbl);
+
+			el.Q<Image>().image = PinboardResources.ICON_TEXT;
 
 			el.tooltip = content;
 		}
@@ -109,9 +112,14 @@ namespace Pinboard.Entries
 			return clone;
 		}
 
-		public override bool IsValidForSearch(string[] filters)
+		// public override bool IsValidForSearch(List<string> filters)
+		// {
+		// 	return Utility.DoStringSearch(content, filters);
+		// }
+
+		public override IEnumerable<string> GetSearchKeywords()
 		{
-			return Utility.DoStringSearch(content, filters);
+			yield return content;
 		}
 	}
 }

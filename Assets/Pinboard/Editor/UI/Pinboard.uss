@@ -7,7 +7,7 @@
 
 
 Toolbar {
-    background-color: #303030;
+    /*background-color: #393939;*/
 }
 
 .board-toolbar {
@@ -15,10 +15,10 @@ Toolbar {
 }
 
 .board-toolbar:hover {
-    background-color: #353535;
+    /*background-color: #353535;*/
 }
 .board-toolbar:focus {
-    background-color: #853535;
+   /*background-color: #853535;*/
 }
 
 
@@ -27,11 +27,11 @@ Label {
 }
 
 ToolbarMenu {
-    background-color: #303030;
+    /*background-color: #373737;*/
 }
 
 ToolbarMenu:hover {
-    background-color: #353535;
+    /*background-color: #303030;*/
 }
 
 Image {
@@ -49,6 +49,11 @@ Image {
     padding: 2px;
     flex-direction: row;
     justify-content: flex-start;
+}
+
+.list-item-root>Label{
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 Toolbar {

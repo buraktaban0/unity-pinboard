@@ -80,13 +80,19 @@ namespace Pinboard
 		}
 
 
-		public static bool DoStringSearch(string val, string[] filters)
+		public static bool DoStringSearch(string val, List<string> filters)
 		{
 			val = val.ToLower();
 
 			var result = filters.Any(f => val.Contains(f));
 
 			return result;
+		}
+
+		public static bool CrossCompareStrings(IEnumerable<string> keywords, IEnumerable<string> filters)
+		{
+			return keywords.Any(keyword => filters.Any(keyword.Contains));
+			//return filters.Any(filter => keywords.Any(filter.Contains));
 		}
 
 		public static string SplitCamelCase(this string input)
@@ -150,11 +156,10 @@ namespace Pinboard
 			var assets =
 				guids.Select(
 					guid => AssetDatabase.LoadAssetAtPath<T>(
-						AssetDatabase.GUIDToAssetPath(guid))).ToList();
+						AssetDatabase.GUIDToAssetPath(guid))).Where(a => a != null).ToList();
 
 			return assets;
 		}
-
 
 
 		public static void ShowFolderContents(int folderInstanceID)

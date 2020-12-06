@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pinboard.Entries;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.UIElements;
@@ -11,6 +10,7 @@ using UnityEngine.UIElements;
 
 namespace Pinboard
 {
+	[DefaultExecutionOrder(-2)]
 	public class PinboardWindow : EditorWindow
 	{
 		public const string DIR_ROOT = "Assets/Pinboard/";
@@ -23,15 +23,30 @@ namespace Pinboard
 		public const string CLASS_LIST_ITEM_ROOT = "list-item-root";
 		public const string CLASS_BOARD_TOOLBAR = "board-toolbar";
 
-		public static PinboardWindow Instance;
+		private static PinboardWindow _instance = null;
 
-		[MenuItem("Pinboard/Test")]
+		public static PinboardWindow Instance
+		{
+			get
+			{
+				if (_instance == null)
+				{
+					_instance = Resources.FindObjectsOfTypeAll<PinboardWindow>().FirstOrDefault();
+				}
+
+				return _instance;
+			}
+			set { _instance = value; }
+		}
+
+		[MenuItem("Pinboard/Open &B")]
 		public static void Open()
 		{
 			var window = GetWindow<PinboardWindow>();
 
 			window.minSize = new Vector2(250, 100);
-			window.titleContent = new GUIContent("Pinboard");
+			window.titleContent =
+				new GUIContent("Pinboard", PinboardResources.ICON_PINBOARD, "Ease your editor sessions.");
 
 			Instance = window;
 
@@ -51,14 +66,18 @@ namespace Pinboard
 		private ToolbarMenu addMenu;
 
 		private ContextualMenuManipulator boardToolbarContextualManipulator;
+		private ContextualMenuManipulator boardDropdownContextualManipulator;
 
 		private ListView itemsList;
 
 		private List<Entry> visibleItems;
 
+		private Queue<Action> updateActions = new Queue<Action>();
 
 		private void OnEnable()
 		{
+			Instance = this;
+
 			var uxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(PATH_PINBOARD_UXML);
 
 			root = rootVisualElement;
@@ -85,6 +104,8 @@ namespace Pinboard
 			EditorSceneManager.sceneLoaded += OnEditorSceneLoaded;
 			EditorSceneManager.sceneOpened += OnEditorSceneOpened;
 
+			EditorApplication.update += EditorUpdate;
+
 			this.Refresh();
 		}
 
@@ -98,7 +119,23 @@ namespace Pinboard
 			EditorSceneManager.sceneLoaded -= OnEditorSceneLoaded;
 			EditorSceneManager.sceneOpened -= OnEditorSceneOpened;
 
+			EditorApplication.update -= EditorUpdate;
 		}
+
+		private void EditorUpdate()
+		{
+			if (updateActions.Count > 0)
+			{
+				var act = updateActions.Dequeue();
+				act?.Invoke();
+			}
+		}
+
+		public void RunNextFrame(Action action)
+		{
+			updateActions.Enqueue(action);
+		}
+
 
 		private void OnEditorSceneOpened(Scene scene, OpenSceneMode mode)
 		{
@@ -149,6 +186,38 @@ namespace Pinboard
 		}
 
 
+		private ContextualMenuManipulator GetBoardContextualMenuManipulator()
+		{
+			return new ContextualMenuManipulator(pop =>
+			{
+				pop.menu.AppendAction("Rename Board", action =>
+				{
+					TextEditPopup.ShowPopup("Rename Board", currentBoard.title, s =>
+					{
+						if (currentBoard.title == s.Trim())
+							return;
+
+						PinboardDatabase.Current.WillModifyBoard(currentBoard);
+						currentBoard.title =
+							s.Trim().CorrectlyEnumerate(PinboardDatabase.Current.Boards.Select(b => b.title));
+						currentBoard.IsDirty = true;
+					});
+				});
+				pop.menu.AppendAction("Delete Board", action =>
+				{
+					var delete = EditorUtility.DisplayDialog("Delete Board",
+					                                         $"Do you want to continue to delete \"{currentBoard.title}\"?",
+					                                         "Yes", "No");
+
+					if (delete)
+					{
+						PinboardDatabase.Current.DeleteBoard(currentBoard);
+					}
+				});
+			});
+		}
+
+
 		private void AddMainToolbar()
 		{
 			var toolbar = new Toolbar();
@@ -156,6 +225,9 @@ namespace Pinboard
 			boardsDropdown = new ToolbarMenu();
 			boardsDropdown.style.minWidth = 84;
 			toolbar.Add(boardsDropdown);
+
+			boardDropdownContextualManipulator = GetBoardContextualMenuManipulator();
+
 			UpdateBoardsMenu();
 
 			toolbar.Add(new ToolbarSpacer());
@@ -194,6 +266,15 @@ namespace Pinboard
 
 			boardsDropdown.menu.AppendSeparator();
 			boardsDropdown.menu.AppendAction("New...", TryCreateNewBoard);
+
+			if (currentBoard == null)
+			{
+				boardsDropdown.RemoveManipulator(boardDropdownContextualManipulator);
+			}
+			else
+			{
+				boardsDropdown.AddManipulator(boardDropdownContextualManipulator);
+			}
 		}
 
 		private void TryCreateNewBoard(DropdownMenuAction action)
@@ -208,33 +289,7 @@ namespace Pinboard
 			boardToolbar = toolbar;
 			toolbar.AddToClassList(CLASS_BOARD_TOOLBAR);
 
-			boardToolbarContextualManipulator = new ContextualMenuManipulator(pop =>
-			{
-				pop.menu.AppendAction("Rename Board", action =>
-				{
-					TextEditPopup.ShowPopup("Rename Board", currentBoard.title, s =>
-					{
-						if (currentBoard.title == s.Trim())
-							return;
-
-						PinboardDatabase.Current.WillModifyBoard(currentBoard);
-						currentBoard.title =
-							s.Trim().CorrectlyEnumerate(PinboardDatabase.Current.Boards.Select(b => b.title));
-						currentBoard.IsDirty = true;
-					});
-				});
-				pop.menu.AppendAction("Delete Board", action =>
-				{
-					var delete = EditorUtility.DisplayDialog("Delete Board",
-					                                         $"Do you want to continue to delete \"{currentBoard.title}\"?",
-					                                         "Yes", "No");
-
-					if (delete)
-					{
-						PinboardDatabase.Current.DeleteBoard(currentBoard);
-					}
-				});
-			});
+			boardToolbarContextualManipulator = GetBoardContextualMenuManipulator();
 
 			toolbar.AddManipulator(boardToolbarContextualManipulator);
 
@@ -291,15 +346,18 @@ namespace Pinboard
 
 		private void OnSearchValueChanged(ChangeEvent<string> evt)
 		{
-			ValidateSearch();
+			DetermineListViewEntries();
 		}
 
-		private void ValidateSearch()
+		private void DetermineListViewEntries()
 		{
 			var str = searchField.value;
 
 			if (currentBoard == null)
+			{
+				itemsList.itemsSource = new List<Entry>();
 				return;
+			}
 
 			if (string.IsNullOrEmpty(str))
 			{
@@ -307,12 +365,26 @@ namespace Pinboard
 			}
 			else
 			{
-				var filters = new string[] {str.ToLower()};
-				visibleItems = currentBoard.entries.Where(item => item.IsValidForSearch(filters)).ToList();
+				str = str.ToLower().Trim();
+				var filters = str.Split(' ').SelectMany(s => s.Split(','))
+				                 .Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList();
+				filters.Add(str);
+
+
+				visibleItems =
+					currentBoard.entries.Where(
+						entry =>
+						{
+							var keywords = entry.GetSearchKeywords().ToList();
+							keywords.Add(entry.GetType().Name.ToLower());
+							keywords = keywords.Select(kw => kw.ToLower().Trim()).ToList();
+							return Utility.CrossCompareStrings(keywords, filters);
+						}).ToList();
 			}
 
 			itemsList.itemsSource = visibleItems;
-			itemsList.Refresh();
+			// Refreshes already at set source line
+			//itemsList.Refresh();
 		}
 
 
@@ -376,9 +448,14 @@ namespace Pinboard
 				}
 			}));
 
-			root.AddManipulator(new ClickActionsManipulator(() => { (root.userData as Entry).OnClick(); },
-			                                                () => { (root.userData as Entry).OnDoubleClick(); }));
+			root.AddManipulator(new ClickActionsManipulator(() => { RunNextFrame((root.userData as Entry).OnClick); },
+			                                                () =>
+			                                                {
+				                                                RunNextFrame((root.userData as Entry).OnDoubleClick);
+			                                                }));
 			var img = new Image();
+			img.style.minWidth = 15;
+			img.style.minHeight = 15;
 			img.style.width = 15;
 			img.style.height = 15;
 			img.style.marginLeft = 2;
@@ -390,8 +467,15 @@ namespace Pinboard
 		private void BindItem(VisualElement element, int index)
 		{
 			element.userData = visibleItems[index];
-			element.Q<Image>().image = visibleItems[index].GetIcon();
+			//element.Q<Image>().image = visibleItems[index].GetIcon();
 			visibleItems[index].BindVisualElement(element);
+
+			var lbl = element.Q<Label>();
+			if (lbl != null)
+			{
+				lbl.style.textOverflow = TextOverflow.Ellipsis;
+				lbl.style.unityTextOverflowPosition = TextOverflowPosition.End;
+			}
 		}
 
 
@@ -411,7 +495,18 @@ namespace Pinboard
 
 		public void Refresh()
 		{
+			updateActions.Enqueue(RefreshInternal);
+		}
+
+		public void RefreshNow()
+		{
+			RefreshInternal();
+		}
+
+		private void RefreshInternal()
+		{
 			//PinboardDatabase.Current.Load();
+
 
 			if (PinboardDatabase.Current.BoardCount < 1)
 			{
@@ -442,8 +537,6 @@ namespace Pinboard
 
 				SetBoard(lastOpenBoard);
 			}
-
-			ValidateSearch();
 		}
 
 
@@ -454,14 +547,16 @@ namespace Pinboard
 			if (board == null)
 			{
 				PinboardPrefs.LastOpenBoardID = string.Empty;
-				itemsList.itemsSource = new List<Entry>();
+				visibleItems = new List<Entry>();
+				//itemsList.itemsSource = new List<Entry>();
 			}
 			else
 			{
 				PinboardPrefs.LastOpenBoardID = board.id;
 				visibleItems = board.entries;
-				itemsList.itemsSource = board.entries;
+				//itemsList.itemsSource = board.entries;
 			}
+
 
 			PinboardCore.SetSelectedBoard(board);
 
@@ -469,7 +564,10 @@ namespace Pinboard
 
 			UpdateBoardsMenu();
 
-			itemsList.Refresh();
+			DetermineListViewEntries();
+
+			// Refreshes at source set
+			//itemsList.Refresh();
 		}
 	}
 }

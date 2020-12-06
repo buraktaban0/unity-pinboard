@@ -9,7 +9,7 @@ namespace Pinboard
 {
 	public class CreateBoardOptions
 	{
-		public string title = "Not defined";
+		public string title;
 		public BoardAccessibility accessibility = BoardAccessibility.ProjectPrivate;
 
 		public CreateBoardOptions(string title, BoardAccessibility accessibility)
