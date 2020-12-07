@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b597ae6855947b18f3cc558a0c7557c, type: 3}
+  m_Name: 251fecbc2f0742a597ef2931e5a755db
+  m_EditorClassIdentifier: 
+  type: Pinboard.Entries.AssetShortcutEntry
+  data: '{"id":"251fecbc2f0742a597ef2931e5a755db","author":"Burak Taban","createdAt":1607371446,"guid":"GlobalObjectId_V1-3-83c2ed844a8c74b779a4c823d16594b1-11400000-0","sceneAssetGuid":"","cachedName":"Readme","cachedType":"Readme","cachedPath":"Assets/Readme.asset","cachedSceneName":"","cachedTransformLocalIdentifier":0}'

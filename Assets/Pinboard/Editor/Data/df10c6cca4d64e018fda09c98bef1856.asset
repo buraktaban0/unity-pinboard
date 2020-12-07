@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b597ae6855947b18f3cc558a0c7557c, type: 3}
+  m_Name: df10c6cca4d64e018fda09c98bef1856
+  m_EditorClassIdentifier: 
+  type: Pinboard.Entries.AssetShortcutEntry
+  data: '{"id":"df10c6cca4d64e018fda09c98bef1856","author":"Burak Taban","createdAt":1607371428,"guid":"GlobalObjectId_V1-1-91537a22d5f914edba99f6237a90792d-4884272826172998034-0","sceneAssetGuid":"","cachedName":"Karakter","cachedType":"GameObject","cachedPath":"Assets/Karakter.prefab","cachedSceneName":"","cachedTransformLocalIdentifier":5225227720863177512}'

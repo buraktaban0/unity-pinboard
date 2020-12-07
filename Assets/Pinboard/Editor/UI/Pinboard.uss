@@ -74,3 +74,23 @@ TextInput {
     -unity-text-align: upper-left;
     align-self: stretch;
 }
+
+
+.ghost-layer {
+    background-color: rgba(255, 255, 255, 0.15);
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.ghost-layer>Image {
+    width: auto;
+    height: auto;
+}
+
+

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Pinboard.Entries;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.UIElements;
@@ -22,6 +23,7 @@ namespace Pinboard
 
 		public const string CLASS_LIST_ITEM_ROOT = "list-item-root";
 		public const string CLASS_BOARD_TOOLBAR = "board-toolbar";
+		public const string CLASS_GHOST_LAYER = "ghost-layer";
 
 
 		private static PinboardWindow _instance = null;
@@ -71,6 +73,9 @@ namespace Pinboard
 
 		private ListView itemsList;
 
+		private VisualElement ghostLayer;
+		private Image ghostLayerIcon;
+
 		private List<Entry> visibleItems;
 
 		private Queue<Action> updateActions = new Queue<Action>();
@@ -97,6 +102,10 @@ namespace Pinboard
 
 			MakeScrollList();
 
+			AddGhostLayer();
+
+			RegisterDragAndDropCallbacks();
+
 			PinboardDatabase.onBoardAdded += OnBoardAdded;
 			PinboardDatabase.onBoardDeleted += OnBoardDeleted;
 			PinboardDatabase.onDatabaseModified += OnBoardsModified;
@@ -112,6 +121,8 @@ namespace Pinboard
 
 		private void OnDisable()
 		{
+			UnregisterDragAndDropCallbacks();
+			
 			PinboardDatabase.onBoardAdded -= OnBoardAdded;
 			PinboardDatabase.onBoardDeleted -= OnBoardDeleted;
 			PinboardDatabase.onDatabaseModified -= OnBoardsModified;
@@ -495,6 +506,77 @@ namespace Pinboard
 		}
 
 
+		private void AddGhostLayer()
+		{
+			ghostLayer = new VisualElement();
+			ghostLayer.AddToClassList(CLASS_GHOST_LAYER);
+			ghostLayer.visible = false;
+			
+			ghostLayerIcon = new Image();
+			ghostLayerIcon.image = PinboardResources.ICON_ADD;
+			
+			ghostLayer.Add(ghostLayerIcon);
+			root.Add(ghostLayer);
+
+		}
+
+
+		private void RegisterDragAndDropCallbacks()
+		{
+			root.RegisterCallback<DragEnterEvent>(OnDragEnter);
+			root.RegisterCallback<DragUpdatedEvent>(OnDragUpdated);
+			root.RegisterCallback<DragLeaveEvent>(OnDragLeave);
+			root.RegisterCallback<DragPerformEvent>(OnDragPerform);
+			root.RegisterCallback<DragExitedEvent>(OnDragExited);	
+		}
+
+		private void UnregisterDragAndDropCallbacks()
+		{
+			root.UnregisterCallback<DragEnterEvent>(OnDragEnter);
+			root.UnregisterCallback<DragUpdatedEvent>(OnDragUpdated);
+			root.UnregisterCallback<DragLeaveEvent>(OnDragLeave);
+			root.UnregisterCallback<DragPerformEvent>(OnDragPerform);
+			root.UnregisterCallback<DragExitedEvent>(OnDragExited);
+		}
+
+
+
+		private void OnDragEnter(DragEnterEvent evt)
+		{
+			var canAccept = DragAndDrop.objectReferences.Length == 1;
+			//DragAndDrop.visualMode = canAccept ?  DragAndDropVisualMode.Link : DragAndDropVisualMode.Rejected;
+
+			ghostLayer.visible = canAccept;
+		}
+
+		private void OnDragUpdated(DragUpdatedEvent evt)
+		{
+			var canAccept = DragAndDrop.objectReferences.Length == 1;
+			DragAndDrop.visualMode = canAccept ? DragAndDropVisualMode.Link : DragAndDropVisualMode.Rejected;
+		}
+		
+		private void OnDragLeave(DragLeaveEvent evt)
+		{
+			ghostLayer.visible = false;
+		}
+		
+		private void OnDragExited(DragExitedEvent evt)
+		{
+			ghostLayer.visible = false;
+		}
+
+		private void OnDragPerform(DragPerformEvent evt)
+		{
+			ghostLayer.visible = false;
+			var obj = DragAndDrop.objectReferences[0];
+			Selection.activeObject = obj;
+			PinboardCore.TryCreateEntry<AssetShortcutEntry>();
+		}
+
+
+
+
+		
 		public void Refresh()
 		{
 			updateActions.Enqueue(RefreshInternal);
