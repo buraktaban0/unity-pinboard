@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf943bf5826843ee9bfb988687f5877d, type: 3}
+  m_Name: f5d49fc026d74dec8907a1a64627eace
+  m_EditorClassIdentifier: 
+  serializedBoard:
+    id: f5d49fc026d74dec8907a1a64627eace
+    accessibility: 3
+    title: My Board
+    createdBy: Burak Taban
+    createdAt: 1607349163
+    entryIds:
+    - d8a4cfebce544bcfbaf02909a51d100b
+    - 85cc5d8bdfaa4281af007d404c3b8c08
+    - 405755de47bb45dfa0a748aaf3f7338b
+    - 29a0f6d55e744edda66d22ba7dfc1ff7
+    - 2c5a90d30b694e7aaa137b958ec44576
+    - 502c9416c5ba47cbbffeb7a5cb456ecd
+    - 1d516ddcffda4687a68ca86e2f5edbda
+    - edf37a6ed238474fafe0d419d8bbad6b
+    - 6d0a7de3caf3493ba9fcfcc7cf1abf0a

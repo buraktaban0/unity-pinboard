@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Pinboard.UI;
@@ -219,20 +220,21 @@ namespace Pinboard.Entries
 			}
 		}
 
-		public override bool Create()
+		public override void Create(Action<bool> onResult)
 		{
 			var obj = Selection.activeObject;
 			Debug.Log(obj);
 			if (!obj)
 			{
 				Debug.Log("Selected asset was null, cannot create shortcut.");
-				return false;
+				onResult?.Invoke(false);
+				return;
 			}
 
-			return TrySetupForObject(obj);
+			TrySetupForObject(obj, onResult);
 		}
 
-		private bool TrySetupForObject(UnityEngine.Object obj)
+		private bool TrySetupForObject(UnityEngine.Object obj, Action<bool> onResult = null)
 		{
 			if (obj is GameObject go)
 			{
@@ -251,6 +253,7 @@ namespace Pinboard.Entries
 			if (id.identifierType == ID_NULL)
 			{
 				Debug.Log("Id was null for object, cannot create shortcut.");
+				onResult?.Invoke(false);
 				return false;
 			}
 
@@ -270,10 +273,11 @@ namespace Pinboard.Entries
 				cachedPath = AssetDatabase.GetAssetPath(obj);
 			}
 
+			onResult?.Invoke(true);
 			return true;
 		}
 
-		public override bool EditOrUpdate(bool recordUndoState)
+		public override bool EditOrUpdate(bool recordUndoState, Action<bool> onResult = null)
 		{
 			return false;
 		}

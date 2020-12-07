@@ -10,7 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b597ae6855947b18f3cc558a0c7557c, type: 3}
-  m_Name: c5561167296747da943ec2e13a92c082
+  m_Name: 38ba599cb784471b9a9f29095f84a11f
   m_EditorClassIdentifier: 
   type: Pinboard.Entries.NoteEntry
-  data: '{"id":"c5561167296747da943ec2e13a92c082","author":"Burak Taban","createdAt":1607275545,"content":"zxc"}'
+  data: '{"id":"38ba599cb784471b9a9f29095f84a11f","author":"Burak Taban","createdAt":1607349368,"content":"Fresh
+    board!"}'

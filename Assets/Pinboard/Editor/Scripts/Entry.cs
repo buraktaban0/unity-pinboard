@@ -39,9 +39,9 @@ namespace Pinboard
 
 		public abstract void UnbindVisualElement(VisualElement el);
 
-		public abstract bool Create();
+		public abstract void Create(Action<bool> onResult);
 
-		public abstract bool EditOrUpdate(bool recordUndoState);
+		public abstract bool EditOrUpdate(bool recordUndoState, Action<bool> onResult = null);
 
 		public virtual void OnClick()
 		{

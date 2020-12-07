@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf943bf5826843ee9bfb988687f5877d, type: 3}
-  m_Name: c2b499e725334a48812044d07898ea5a
+  m_Name: 86dd522c75154ccd99f3b18959b6a081
   m_EditorClassIdentifier: 
   serializedBoard:
-    id: c2b499e725334a48812044d07898ea5a
+    id: 86dd522c75154ccd99f3b18959b6a081
     accessibility: 3
-    title: asd
+    title: New Board
     createdBy: Burak Taban
-    createdAt: 1607275545
+    createdAt: 1607349368
     entryIds:
-    - c5561167296747da943ec2e13a92c082
-    - 9e0d9fdf77584798a3d11eb58949d702
+    - 38ba599cb784471b9a9f29095f84a11f
+    - 1f14069abf074892b70703bf7bc7b126

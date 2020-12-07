@@ -20,9 +20,9 @@ namespace Pinboard
 		public static string PATH_CFG = DIR_ROOT + "/PinboardConfig.asset";
 		public static string DIR_PROJECT => Application.dataPath.Replace("Assets", "");
 
-		
+
 		public static readonly BoardAccessibility[] ALLOWED_ACCESSIBILITIES = {BoardAccessibility.ProjectPublic};
-		
+
 		private static PinboardConfig _config;
 
 		public static PinboardConfig Config
@@ -184,15 +184,16 @@ namespace Pinboard
 				throw new Exception("Tried to create an entry of unknown type " + entryType.FullName);
 			}
 
-			bool wasCreated = entry.Create();
-
-			if (!wasCreated)
+			entry.Create(wasCreated =>
 			{
-				return;
-			}
+				if (!wasCreated)
+				{
+					return;
+				}
 
-			PinboardDatabase.Current.WillModifyBoard(selectedBoard, "Create entry");
-			selectedBoard.Add(entry);
+				PinboardDatabase.Current.WillModifyBoard(selectedBoard, "Create entry");
+				selectedBoard.Add(entry);
+			});
 		}
 
 		public static void TryCreateEntry(Entry template)

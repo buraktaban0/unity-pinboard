@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -52,13 +53,13 @@ namespace Pinboard.Entries
 			}
 		}
 
-		public override bool Create()
+		public override void Create(Action<bool> onResult)
 		{
 			popupTitle = "Create Note";
-			return EditOrUpdate(false);
+			EditOrUpdate(false, onResult);
 		}
 
-		public override bool EditOrUpdate(bool recordUndoState)
+		public override bool EditOrUpdate(bool recordUndoState, Action<bool> onResult = null)
 		{
 
 			TextEditPopup.ShowPopup(this, popupTitle, this.content, s =>
@@ -72,6 +73,8 @@ namespace Pinboard.Entries
 				popupTitle = "Update Note";
 				this.content = s;
 				this.IsDirty = true;
+				
+				onResult?.Invoke(true);
 			});
 
 			return true;

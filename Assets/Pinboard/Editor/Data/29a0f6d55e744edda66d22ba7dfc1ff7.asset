@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b597ae6855947b18f3cc558a0c7557c, type: 3}
-  m_Name: 9e0d9fdf77584798a3d11eb58949d702
+  m_Name: 29a0f6d55e744edda66d22ba7dfc1ff7
   m_EditorClassIdentifier: 
   type: Pinboard.Entries.AssetShortcutEntry
-  data: '{"id":"9e0d9fdf77584798a3d11eb58949d702","author":"Burak Taban","createdAt":1607275551,"guid":"GlobalObjectId_V1-1-efe2a1bc495ba0c45bdaf8efabec3348-919132149155446097-0","sceneAssetGuid":"","cachedName":"tshirt2","cachedType":"GameObject","cachedPath":"Assets/tshirt2.fbx","cachedSceneName":"","cachedTransformLocalIdentifier":9766822690554734571}'
+  data: '{"id":"29a0f6d55e744edda66d22ba7dfc1ff7","author":"Burak Taban","createdAt":1607349206,"guid":"GlobalObjectId_V1-1-d0234ba368eeec9418390da711bfdad0-102900000-0","sceneAssetGuid":"","cachedName":"Materials","cachedType":"DefaultAsset","cachedPath":"Assets/Materials","cachedSceneName":"","cachedTransformLocalIdentifier":0}'
