@@ -124,7 +124,9 @@ namespace Pinboard.Entries
 
 		public override void BindVisualElement(VisualElement el)
 		{
-			var lbl = new Label();
+			var lbl = el.Q<Label>();
+			lbl?.RemoveFromHierarchy();
+			lbl = new Label();
 			lbl.style.textOverflow = TextOverflow.Ellipsis;
 			lbl.name = "asset-shortcut-name";
 			el.Add(lbl);
@@ -212,7 +214,6 @@ namespace Pinboard.Entries
 
 		public override void UnbindVisualElement(VisualElement el)
 		{
-			Debug.Log("unbind");
 			var lbl = el.Q<Label>("asset-shortcut-name");
 			if (lbl != null)
 			{

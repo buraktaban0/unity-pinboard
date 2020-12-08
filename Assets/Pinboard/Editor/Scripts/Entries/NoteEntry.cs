@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 namespace Pinboard.Entries
 {
 	[System.Serializable]
-	[EntryType("Note",true)]
+	[EntryType("Note", true)]
 	public class NoteEntry : Entry
 	{
 		public override string ShortVisibleName => content.Truncate();
@@ -34,7 +34,9 @@ namespace Pinboard.Entries
 
 		public override void BindVisualElement(VisualElement el)
 		{
-			var lbl = new Label(content);
+			var lbl = el.Q<Label>();
+			lbl?.RemoveFromHierarchy();
+			lbl = new Label(content);
 			lbl.style.textOverflow = TextOverflow.Ellipsis;
 			lbl.name = "simple-text-content";
 			el.Add(lbl);
@@ -47,10 +49,7 @@ namespace Pinboard.Entries
 		public override void UnbindVisualElement(VisualElement el)
 		{
 			var lbl = el.Q<Label>("simple-text-content");
-			if (lbl != null)
-			{
-				el.Remove(lbl);
-			}
+			lbl?.RemoveFromHierarchy();
 		}
 
 		public override void Create(Action<bool> onResult)
@@ -61,10 +60,8 @@ namespace Pinboard.Entries
 
 		public override bool EditOrUpdate(bool recordUndoState, Action<bool> onResult = null)
 		{
-
 			TextEditPopup.ShowPopup(this, popupTitle, this.content, s =>
 			{
-				
 				if (recordUndoState)
 				{
 					PinboardDatabase.Current.WillModifyEntry(this);
@@ -73,7 +70,7 @@ namespace Pinboard.Entries
 				popupTitle = "Update Note";
 				this.content = s;
 				this.IsDirty = true;
-				
+
 				onResult?.Invoke(true);
 			});
 
@@ -95,7 +92,6 @@ namespace Pinboard.Entries
 			base.PopulateContextualMenu(evt);
 
 			evt.menu.AppendAction("Edit", action => { this.EditOrUpdate(true); });
-			
 		}
 
 		public override void CopySelfToClipboard()
