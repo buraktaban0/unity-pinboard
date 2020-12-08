@@ -91,7 +91,7 @@ namespace Pinboard.Entries
 		{
 			base.PopulateContextualMenu(evt);
 
-			evt.menu.AppendAction("Edit", action => { this.EditOrUpdate(true); });
+			evt.menu.AppendAction("Edit...", action => { this.EditOrUpdate(true); });
 		}
 
 		public override void CopySelfToClipboard()

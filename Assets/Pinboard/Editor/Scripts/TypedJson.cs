@@ -26,6 +26,9 @@ namespace Pinboard
 
 		public T ToObject<T>() where T : class
 		{
+			var t = Type.GetType(type);
+			if (t == null)
+				return null;
 			return JsonUtility.FromJson(data, Type.GetType(type)) as T;
 		}
 	}

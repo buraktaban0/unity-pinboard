@@ -43,7 +43,7 @@ namespace Pinboard
 					_current.isMainDatabase = true;
 					// Rerun OnEnable with the awareness of being the main database.
 					_current.OnEnable();
-					
+
 					_current.Load();
 				}
 
@@ -71,7 +71,7 @@ namespace Pinboard
 
 
 		private static PinboardDatabase preSerializationSnapshot = null;
-		
+
 
 		[SerializeField]
 		private bool isMainDatabase = false;
@@ -139,12 +139,12 @@ namespace Pinboard
 
 			// EntriesFlat.ForEach(e => Debug.Log("before " + e.ShortVisibleName));
 
-			
+
 			// Debug.Log("before take");
-			
-			if(preSerializationSnapshot)
+
+			if (preSerializationSnapshot)
 				DestroyImmediate(preSerializationSnapshot);
-			
+
 			// To prevent instance from being able to take snapshots and thus blocking the application recursively.
 			this.isMainDatabase = false;
 			preSerializationSnapshot = Instantiate(this);
@@ -261,7 +261,7 @@ namespace Pinboard
 		public void Save()
 		{
 			didModifyAssetDatabase = false;
-			
+
 			foreach (var board in boards)
 			{
 				if (board.IsDirty)
@@ -562,6 +562,7 @@ namespace Pinboard
 			var entryContainers = Utility.LoadAssets<BoardEntryJsonContainer>();
 			var entries = entryContainers
 			              .Select(entryData => new TypedJson(entryData.type, entryData.data).ToObject<Entry>())
+			              .Where(e => e != null)
 			              .ToList();
 
 			this.serializedBoardContainers = new Dictionary<string, SerializedBoardContainer>();
@@ -624,7 +625,8 @@ namespace Pinboard
 					if (entryData == null)
 						continue;
 					var entry = JsonUtility.FromJson<TypedJson>(entryData).ToObject<Entry>();
-					board.Add(entry);
+					if (entry != null)
+						board.Add(entry);
 				}
 
 				return board;

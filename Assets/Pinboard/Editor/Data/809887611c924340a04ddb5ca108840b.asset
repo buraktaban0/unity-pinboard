@@ -10,20 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf943bf5826843ee9bfb988687f5877d, type: 3}
-  m_Name: 86dd522c75154ccd99f3b18959b6a081
+  m_Name: 809887611c924340a04ddb5ca108840b
   m_EditorClassIdentifier: 
   serializedBoard:
-    id: 86dd522c75154ccd99f3b18959b6a081
+    id: 809887611c924340a04ddb5ca108840b
     accessibility: 3
     title: New Board
     createdBy: Burak Taban
-    createdAt: 1607349368
+    createdAt: 1607431460
     entryIds:
-    - 38ba599cb784471b9a9f29095f84a11f
-    - 1f14069abf074892b70703bf7bc7b126
-    - af4034bff97e4793bf16f5d16da4f822
-    - df10c6cca4d64e018fda09c98bef1856
-    - 5b1a22c7846e45c3b159024921839610
-    - e39264e65a84429382f382dabd2f29ac
-    - 251fecbc2f0742a597ef2931e5a755db
-    - d4f56a3c8a3443169652e024efaba9a0
+    - c0f833646d20473d90789b3ef5e8fc85
+    - 8015ebce12ff4559b1e23689589aa22d
+    - 5c93e084f90a405da1f76e09aa13d0df
+    - f098e5d9a6574ca4badc3bdf1f0d440d
+    - f52bbbf1d93b4ca6a62b6e77adf3024c
+    - 9cbc71061346415a9eae10a2f8f0face

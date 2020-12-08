@@ -12,7 +12,7 @@ namespace Pinboard.Entries
 {
 	[System.Serializable]
 	[EntryType("Asset Shortcut", false, BoardAccessibility.Global)]
-	public class AssetShortcutEntry : Entry
+	public class ObjectShortcutEntry : Entry
 	{
 		public const string INVALID_ASSET = "Invalid Asset";
 
@@ -25,7 +25,7 @@ namespace Pinboard.Entries
 		[MenuItem("Assets/Pinboard/Save Shortcut")]
 		public static void SaveAssetShortcutToPinboard()
 		{
-			PinboardCore.TryCreateEntry<AssetShortcutEntry>();
+			PinboardCore.TryCreateEntry<ObjectShortcutEntry>();
 		}
 
 		[MenuItem("Assets/Pinboard/Save Shortcut", true)]
@@ -37,7 +37,7 @@ namespace Pinboard.Entries
 		[MenuItem("GameObject/Pinboard/Save Shortcut", false, 0)]
 		public static void SaveGameObjectShortcutToPinboard()
 		{
-			PinboardCore.TryCreateEntry<AssetShortcutEntry>();
+			PinboardCore.TryCreateEntry<ObjectShortcutEntry>();
 		}
 
 		[MenuItem("GameObject/Pinboard/Save Shortcut", true, 0)]
@@ -109,12 +109,12 @@ namespace Pinboard.Entries
 		public string cachedSceneName = "";
 		public ulong cachedTransformLocalIdentifier = 0;
 
-		public AssetShortcutEntry()
+		public ObjectShortcutEntry()
 		{
 			guid = "";
 		}
 
-		public AssetShortcutEntry(string guid)
+		public ObjectShortcutEntry(string guid)
 		{
 			this.IsDirty = true;
 
@@ -390,7 +390,7 @@ namespace Pinboard.Entries
 
 		public override Entry Clone()
 		{
-			var clone = new AssetShortcutEntry(this.guid);
+			var clone = new ObjectShortcutEntry(this.guid);
 			clone.sceneAssetGuid = sceneAssetGuid;
 			clone.cachedName = cachedName;
 			clone.cachedPath = cachedPath;

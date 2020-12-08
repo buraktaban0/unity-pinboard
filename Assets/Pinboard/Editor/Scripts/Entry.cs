@@ -30,7 +30,10 @@ namespace Pinboard
 
 		public string author = PinboardCore.User;
 
+		public string comment = string.Empty;
+		
 		public long createdAt = Utility.GetUnixTimestamp();
+		
 		public DateTime CreationTime => Utility.FromUnixToLocal(createdAt);
 
 		//public abstract Texture GetIcon();

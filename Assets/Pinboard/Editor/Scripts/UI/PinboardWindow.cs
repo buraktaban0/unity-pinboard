@@ -122,7 +122,7 @@ namespace Pinboard
 		private void OnDisable()
 		{
 			UnregisterDragAndDropCallbacks();
-			
+
 			PinboardDatabase.onBoardAdded -= OnBoardAdded;
 			PinboardDatabase.onBoardDeleted -= OnBoardDeleted;
 			PinboardDatabase.onDatabaseModified -= OnBoardsModified;
@@ -431,6 +431,18 @@ namespace Pinboard
 				var entry = root.userData as Entry;
 				entry.PopulateContextualMenu(evt);
 
+				evt.menu.AppendAction("Comment...", action =>
+				{
+					TextEditPopup.ShowPopup(entry, "Comment", entry.comment, newVal =>
+					{
+						if (newVal == entry.comment)
+							return;
+
+						PinboardDatabase.Current.WillModifyEntry(entry);
+						entry.comment = newVal;
+					});
+				});
+
 				evt.menu.AppendSeparator();
 
 				evt.menu.AppendAction("Copy", action => { entry.CopySelfToClipboard(); });
@@ -479,9 +491,21 @@ namespace Pinboard
 
 		private void BindItem(VisualElement element, int index)
 		{
-			element.userData = visibleItems[index];
-			//element.Q<Image>().image = visibleItems[index].GetIcon();
-			visibleItems[index].BindVisualElement(element);
+			var entry = visibleItems[index];
+			element.userData = entry;
+
+			entry.BindVisualElement(element);
+
+			if (string.IsNullOrEmpty(entry.comment) == false)
+			{
+				var tooltip = element.tooltip;
+				if (string.IsNullOrEmpty(tooltip) == false)
+					tooltip += "\n\nP.S. ";
+
+				tooltip += entry.comment;
+
+				element.tooltip = tooltip;
+			}
 
 			var lbl = element.Q<Label>();
 			if (lbl != null)
@@ -511,13 +535,12 @@ namespace Pinboard
 			ghostLayer = new VisualElement();
 			ghostLayer.AddToClassList(CLASS_GHOST_LAYER);
 			ghostLayer.visible = false;
-			
+
 			ghostLayerIcon = new Image();
 			ghostLayerIcon.image = PinboardResources.ICON_ADD;
-			
+
 			ghostLayer.Add(ghostLayerIcon);
 			root.Add(ghostLayer);
-
 		}
 
 
@@ -527,7 +550,7 @@ namespace Pinboard
 			root.RegisterCallback<DragUpdatedEvent>(OnDragUpdated);
 			root.RegisterCallback<DragLeaveEvent>(OnDragLeave);
 			root.RegisterCallback<DragPerformEvent>(OnDragPerform);
-			root.RegisterCallback<DragExitedEvent>(OnDragExited);	
+			root.RegisterCallback<DragExitedEvent>(OnDragExited);
 		}
 
 		private void UnregisterDragAndDropCallbacks()
@@ -540,43 +563,46 @@ namespace Pinboard
 		}
 
 
+		private bool isDragging = false;
 
 		private void OnDragEnter(DragEnterEvent evt)
 		{
 			var canAccept = DragAndDrop.objectReferences.Length == 1;
-			//DragAndDrop.visualMode = canAccept ?  DragAndDropVisualMode.Link : DragAndDropVisualMode.Rejected;
-
-			ghostLayer.visible = canAccept;
+			// ghostLayer.visible = canAccept;
+			isDragging = true;
 		}
 
 		private void OnDragUpdated(DragUpdatedEvent evt)
 		{
+			if (!isDragging)
+				return;
+
 			var canAccept = DragAndDrop.objectReferences.Length == 1;
+			ghostLayer.visible = canAccept;
 			DragAndDrop.visualMode = canAccept ? DragAndDropVisualMode.Link : DragAndDropVisualMode.Rejected;
 		}
-		
+
 		private void OnDragLeave(DragLeaveEvent evt)
 		{
 			ghostLayer.visible = false;
 		}
-		
+
 		private void OnDragExited(DragExitedEvent evt)
 		{
+			isDragging = false;
 			ghostLayer.visible = false;
 		}
 
 		private void OnDragPerform(DragPerformEvent evt)
 		{
+			isDragging = false;
 			ghostLayer.visible = false;
 			var obj = DragAndDrop.objectReferences[0];
 			Selection.activeObject = obj;
-			PinboardCore.TryCreateEntry<AssetShortcutEntry>();
+			PinboardCore.TryCreateEntry<ObjectShortcutEntry>();
 		}
 
 
-
-
-		
 		public void Refresh()
 		{
 			updateActions.Enqueue(RefreshInternal);
