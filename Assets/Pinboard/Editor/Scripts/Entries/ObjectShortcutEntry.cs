@@ -143,7 +143,8 @@ namespace Pinboard.Entries
 				cachedTransformLocalIdentifier = GlobalObjectId.GetGlobalObjectIdSlow(go.transform).targetObjectId;
 			}
 
-			if ((!IsSceneObject && obj) ||  (IsSceneObject && obj && SceneAsset && EditorSceneManager.GetActiveScene().name == SceneAsset.name))
+			if ((!IsSceneObject && obj) || (IsSceneObject && obj && SceneAsset &&
+			                                EditorSceneManager.GetActiveScene().name == SceneAsset.name))
 			{
 				cachedName = obj.name;
 				cachedType = obj.GetType().Name;
@@ -318,10 +319,7 @@ namespace Pinboard.Entries
 			if ((!IsSceneObject && obj))
 			{
 				evt.menu.AppendAction("Select Asset", action => TrySelectObject());
-				evt.menu.AppendAction("Edit Asset", action =>
-				{
-					UnityObjectEditorContainerWindow.Show(obj);
-				});
+				evt.menu.AppendAction("Edit Asset", action => { UnityObjectEditorContainerWindow.Show(obj); });
 			}
 			else if (IsSceneObject)
 			{
@@ -385,7 +383,6 @@ namespace Pinboard.Entries
 				PinboardClipboard.SystemBuffer = cachedPath;
 				PinboardClipboard.UnityObject = Object;
 			}
-
 		}
 
 		public override Entry Clone()
@@ -420,10 +417,16 @@ namespace Pinboard.Entries
 			yield return cachedType;
 			if (IsSceneObject)
 			{
+				yield return "scene";
 				yield return cachedSceneName;
 			}
 			else
 			{
+				if (IsFolder)
+				{
+					yield return "folder";
+				}
+
 				yield return cachedPath;
 			}
 		}
@@ -477,7 +480,6 @@ namespace Pinboard.Entries
 
 		private bool CheckAndHandleConversionToPrefab()
 		{
-
 			return false;
 			// Cannot find conversions, no local file id for prefab instances in scene files. 
 			// TODO: Try PrefabUtility.prefabInstanceUpdated
@@ -514,8 +516,6 @@ namespace Pinboard.Entries
 			// Debug.Log("C");
 			//
 			// return TrySetupForObject(convertedObj.gameObject);
-
 		}
-
 	}
 }

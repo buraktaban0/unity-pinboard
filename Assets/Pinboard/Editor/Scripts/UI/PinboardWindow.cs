@@ -381,7 +381,7 @@ namespace Pinboard
 				str = str.ToLower().Trim();
 				var filters = str.Split(' ').SelectMany(s => s.Split(','))
 				                 .Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList();
-				filters.Add(str);
+				//filters.Add(str);
 
 
 				visibleItems =
@@ -567,7 +567,7 @@ namespace Pinboard
 
 		private void OnDragEnter(DragEnterEvent evt)
 		{
-			var canAccept = DragAndDrop.objectReferences.Length == 1;
+			var canAccept = DragAndDrop.objectReferences.Length > 0;
 			// ghostLayer.visible = canAccept;
 			isDragging = true;
 		}
@@ -577,7 +577,7 @@ namespace Pinboard
 			if (!isDragging)
 				return;
 
-			var canAccept = DragAndDrop.objectReferences.Length == 1;
+			var canAccept = DragAndDrop.objectReferences.Length > 0;
 			ghostLayer.visible = canAccept;
 			DragAndDrop.visualMode = canAccept ? DragAndDropVisualMode.Link : DragAndDropVisualMode.Rejected;
 		}
@@ -597,9 +597,14 @@ namespace Pinboard
 		{
 			isDragging = false;
 			ghostLayer.visible = false;
-			var obj = DragAndDrop.objectReferences[0];
-			Selection.activeObject = obj;
-			PinboardCore.TryCreateEntry<ObjectShortcutEntry>();
+			foreach (var objectReference in DragAndDrop.objectReferences.ToArray())
+			{
+				Selection.activeObject = objectReference;
+				PinboardCore.TryCreateEntry<ObjectShortcutEntry>();
+			}
+			// var obj = DragAndDrop.objectReferences[0];
+			// Selection.activeObject = obj;
+			// PinboardCore.TryCreateEntry<ObjectShortcutEntry>();
 		}
 
 

@@ -91,7 +91,18 @@ namespace Pinboard
 
 		public static bool CrossCompareStrings(IEnumerable<string> keywords, IEnumerable<string> filters)
 		{
-			return keywords.Any(keyword => filters.Any(keyword.Contains));
+			// foreach (var filter in filters)
+			// {
+			// 	Debug.Log("f " + filter);
+			// }
+			//
+			// foreach (var keyword in keywords)
+			// {
+			// 	Debug.Log("k " + keyword);
+			// }
+
+			return filters.All(filter => keywords.Any(keyword => keyword.Contains(filter)));
+			//return keywords.Any(keyword => filters.Any(keyword.Contains));
 			//return filters.Any(filter => keywords.Any(filter.Contains));
 		}
 
