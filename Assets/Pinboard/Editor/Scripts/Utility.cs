@@ -176,7 +176,7 @@ namespace Pinboard
 		public static void ShowFolderContents(int folderInstanceID)
 		{
 			// Find the internal ProjectBrowser class in the editor assembly.
-			Assembly editorAssembly = typeof(Editor).Assembly;
+			Assembly editorAssembly = typeof(UnityEditor.Editor).Assembly;
 			System.Type projectBrowserType = editorAssembly.GetType("UnityEditor.ProjectBrowser");
 
 			// This is the internal method, which performs the desired action.

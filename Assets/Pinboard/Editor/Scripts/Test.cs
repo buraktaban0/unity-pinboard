@@ -127,6 +127,13 @@ namespace Pinboard
 			Debug.Log(a + "  " + t + "  " + m);
 		}
 
+		[MenuItem("Test/Generic Control definitions")]
+		public static void GenericControlDefinitions()
+		{
+			var defs = GenericControlUtility.GetAllDefinitions();
+			Debug.Log(defs.Count);
+		}
+
 		[MenuItem("Test/Count databases")]
 		public static void CountDatabases()
 		{

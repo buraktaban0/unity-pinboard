@@ -10,12 +10,14 @@ namespace Pinboard.Entries
 	public class GenericControlDefinition
 	{
 		public string typeName = "";
-		public string methodName = "";
+		public string validatorName = "";
+		public string getterName = "";
+		public string setterName = "";
 		public string name = "";
 	}
 
 
-	public class GenericControlEntry : Entry
+	public class GenericControlEntry : Entry, ISerializationCallbackReceiver
 	{
 		public GenericControlDefinition definition;
 
@@ -29,11 +31,21 @@ namespace Pinboard.Entries
 		private MethodInfo setter;
 		private MethodInfo validator;
 
+
 		public GenericControlEntry(GenericControlDefinition definition)
 		{
 			this.definition = definition;
 
-			containingType = Type.GetType(definition.typeName);
+			BindReflectedData();
+		}
+
+		public void OnBeforeSerialize()
+		{
+		}
+
+		public void OnAfterDeserialize()
+		{
+			BindReflectedData();
 		}
 
 
@@ -49,12 +61,13 @@ namespace Pinboard.Entries
 
 		public override void Create(Action<bool> onResult)
 		{
-			throw new NotImplementedException();
+			onResult?.Invoke(true);
 		}
 
 		public override bool EditOrUpdate(bool recordUndoState, Action<bool> onResult = null)
 		{
-			throw new NotImplementedException();
+			onResult?.Invoke(true);
+			return false;
 		}
 
 		public override void CopySelfToClipboard()
@@ -66,6 +79,25 @@ namespace Pinboard.Entries
 		{
 			var clone = new GenericControlEntry(this.definition);
 			return clone;
+		}
+
+
+		private void BindReflectedData()
+		{
+			containingType = Type.GetType(definition.typeName);
+			validator = containingType.GetMethod(definition.validatorName);
+			getter = containingType.GetMethod(definition.getterName);
+			setter = containingType.GetMethod(definition.setterName);
+		}
+
+		private object GetReflectedValue()
+		{
+			return getter.Invoke(null, null);
+		}
+
+		private void SetReflectedValue(object obj)
+		{
+			setter.Invoke(null, new[] {obj});
 		}
 	}
 }
