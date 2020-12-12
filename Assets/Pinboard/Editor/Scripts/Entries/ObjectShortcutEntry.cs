@@ -158,7 +158,7 @@ namespace Pinboard.Entries
 					cachedPath = AssetDatabase.GetAssetPath(obj);
 				}
 
-				lbl.text = obj.name;
+				lbl.text = $"{(hasExplicitName ? explicitName + " | " : "")}{obj.name}";
 				img.image = EditorGUIUtility.ObjectContent(obj, obj.GetType()).image;
 				el.tooltip = $"{obj.GetType().Name} {obj.name} @ {(IsSceneObject ? sceneAsset.name : AssetPath)}";
 				return;
@@ -172,7 +172,7 @@ namespace Pinboard.Entries
 				if (!sceneAsset)
 				{
 					// scene deleted;
-					lbl.text = $"Missing {cachedType} {cachedName} (Scene missing)";
+					lbl.text = $"{(hasExplicitName ? explicitName + " | " : "")}Missing {cachedType} {cachedName} (Scene missing)";
 					img.image = PinboardResources.ICON_INVALID_SCENE;
 					el.tooltip =
 						$"Missing {cachedType} {cachedName} @ {cachedSceneName}\nThe Scene containing this GameObject is missing.";
@@ -190,14 +190,14 @@ namespace Pinboard.Entries
 					}
 
 					// deleted scene object
-					lbl.text = $"Missing {cachedType} {cachedName}";
+					lbl.text = $"{(hasExplicitName ? explicitName + " | " : "")}Missing {cachedType} {cachedName}";
 					img.image = PinboardResources.ICON_DELETE;
 					el.tooltip =
 						$"Missing {cachedType} {cachedName} @ {cachedSceneName}\nThe GameObject was probably deleted or a prefab pack/unpack operation took place. Pinboard cannot track these events.";
 				}
 				else
 				{
-					lbl.text = $"{cachedType} {cachedName}\t(In scene '{sceneAsset.name}')";
+					lbl.text = $"{(hasExplicitName ? explicitName + " | " : "")}{cachedType} {cachedName}\t(In scene '{sceneAsset.name}')";
 					img.image = PinboardResources.ICON_INVALID_SCENE;
 					el.tooltip =
 						$"{cachedType} {cachedName} @ {cachedSceneName}\nOpen the scene to access {cachedName}.";
@@ -206,7 +206,7 @@ namespace Pinboard.Entries
 			else
 			{
 				// Asset or folder deleted
-				lbl.text = $"Missing {cachedType} {cachedName}";
+				lbl.text = $"{(hasExplicitName ? explicitName + " | " : "")}Missing {cachedType} {cachedName}";
 				img.image = PinboardResources.ICON_DELETE;
 				el.tooltip = $"Missing {cachedType} {cachedName} @ {cachedPath}\nThe asset was probably deleted.";
 			}

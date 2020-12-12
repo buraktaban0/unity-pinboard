@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b597ae6855947b18f3cc558a0c7557c, type: 3}
+  m_Name: 4b6e5a7d83b44ad7a8e878bb97a3a921
+  m_EditorClassIdentifier: 
+  type: Pinboard.Entries.SceneViewRecordEntry
+  data: '{"id":"4b6e5a7d83b44ad7a8e878bb97a3a921","hasExplicitName":true,"explicitName":"qwe","author":"Burak
+    Taban","comment":"","createdAt":1607782107,"pivot":{"x":4.948345184326172,"y":2.949622631072998,"z":1.764844536781311},"size":1.653373122215271,"rotation":{"x":-0.18033073842525483,"y":0.7239955067634583,"z":-0.20623013377189637,"w":-0.6330748200416565},"orthographic":false,"in2DMode":false}'

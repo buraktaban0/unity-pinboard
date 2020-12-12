@@ -28,6 +28,10 @@ namespace Pinboard
 
 		public string id = Guid.Get();
 
+		public bool hasExplicitName = false;
+
+		public string explicitName = string.Empty;
+		
 		public string author = PinboardCore.User;
 
 		public string comment = string.Empty;

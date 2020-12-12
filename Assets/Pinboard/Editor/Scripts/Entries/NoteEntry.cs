@@ -36,7 +36,7 @@ namespace Pinboard.Entries
 		{
 			var lbl = el.Q<Label>();
 			lbl?.RemoveFromHierarchy();
-			lbl = new Label(content);
+			lbl = new Label(hasExplicitName ? explicitName : content);
 			lbl.style.textOverflow = TextOverflow.Ellipsis;
 			lbl.name = "simple-text-content";
 			el.Add(lbl);

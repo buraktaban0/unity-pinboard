@@ -442,6 +442,19 @@ namespace Pinboard
 						entry.comment = newVal;
 					});
 				});
+				
+				evt.menu.AppendAction("Rename...", action =>
+				{
+					TextEditPopup.ShowPopup(entry, "Rename", entry.explicitName, newVal =>
+					{
+						if (newVal == entry.explicitName)
+							return;
+						
+						PinboardDatabase.Current.WillModifyEntry(entry);
+						entry.hasExplicitName = true;
+						entry.explicitName = newVal;
+					});
+				});
 
 				evt.menu.AppendSeparator();
 
@@ -463,6 +476,7 @@ namespace Pinboard
 						                      Refresh();
 					                      }
 				                      });
+				
 				if (PinboardClipboard.Entry != null)
 				{
 					evt.menu.AppendAction($"Paste ({PinboardClipboard.Entry.ShortVisibleName})", action =>
@@ -471,6 +485,12 @@ namespace Pinboard
 						Refresh();
 					});
 				}
+				
+				evt.menu.AppendSeparator();
+				evt.menu.AppendAction(entry.author, action => { }, DropdownMenuAction.Status.Disabled);
+				evt.menu.AppendAction($"{entry.CreationTime.ToShortDateString()}, {entry.CreationTime.ToShortTimeString()}".Replace("/", "."),
+				                      action => { }, DropdownMenuAction.Status.Disabled);
+				
 			}));
 
 			root.AddManipulator(new ClickActionsManipulator(() => { RunNextFrame((root.userData as Entry).OnClick); },

@@ -207,6 +207,9 @@ namespace Pinboard
 				}
 
 				var entry = template.Clone();
+				entry.comment = template.comment;
+				entry.hasExplicitName = template.hasExplicitName;
+				entry.explicitName = template.explicitName;
 				entry.IsDirty = true;
 
 				PinboardDatabase.Current.WillModifyBoard(selectedBoard, "Paste entry");

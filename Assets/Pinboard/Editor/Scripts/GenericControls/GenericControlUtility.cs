@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Pinboard.Entries;
+using UnityEditor;
 using UnityEngine;
 
 namespace Pinboard
@@ -45,6 +46,7 @@ namespace Pinboard
 							Debug.LogWarning($"Generic control \"{group.Key}\" does not have a getter method.");
 							continue;
 						}
+						
 
 						var setter = group.FirstOrDefault(t => !t.Item2.isValidateMethod &&
 						                                       t.Item1.ReturnType == voidType &&
