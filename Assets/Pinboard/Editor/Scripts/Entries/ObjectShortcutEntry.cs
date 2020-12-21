@@ -172,7 +172,8 @@ namespace Pinboard.Entries
 				if (!sceneAsset)
 				{
 					// scene deleted;
-					lbl.text = $"{(hasExplicitName ? explicitName + " | " : "")}Missing {cachedType} {cachedName} (Scene missing)";
+					lbl.text =
+						$"{(hasExplicitName ? explicitName + " | " : "")}Missing {cachedType} {cachedName} (Scene missing)";
 					img.image = PinboardResources.ICON_INVALID_SCENE;
 					el.tooltip =
 						$"Missing {cachedType} {cachedName} @ {cachedSceneName}\nThe Scene containing this GameObject is missing.";
@@ -197,7 +198,8 @@ namespace Pinboard.Entries
 				}
 				else
 				{
-					lbl.text = $"{(hasExplicitName ? explicitName + " | " : "")}{cachedType} {cachedName}\t(In scene '{sceneAsset.name}')";
+					lbl.text =
+						$"{(hasExplicitName ? explicitName + " | " : "")}{cachedType} {cachedName}\t(In scene '{sceneAsset.name}')";
 					img.image = PinboardResources.ICON_INVALID_SCENE;
 					el.tooltip =
 						$"{cachedType} {cachedName} @ {cachedSceneName}\nOpen the scene to access {cachedName}.";
@@ -224,7 +226,7 @@ namespace Pinboard.Entries
 		public override void Create(Action<bool> onResult)
 		{
 			var obj = Selection.activeObject;
-			Debug.Log(obj);
+			//Debug.Log(obj);
 			if (!obj)
 			{
 				Debug.Log("Selected asset was null, cannot create shortcut.");
@@ -292,7 +294,7 @@ namespace Pinboard.Entries
 			if (!obj)
 				return;
 
-			if (IsFolder && !IsSceneObject)
+			if ((IsFolder && !IsSceneObject) || obj is SceneAsset sceneObj)
 			{
 				SelectAsset();
 			}
@@ -304,6 +306,14 @@ namespace Pinboard.Entries
 		public override void OnDoubleClick()
 		{
 			base.OnDoubleClick();
+
+			var obj = Object;
+			if (obj && obj is SceneAsset sceneObj)
+			{
+				var wasSaved = EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+				EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(sceneObj));
+				return;
+			}
 
 			TrySelectObject();
 		}
@@ -360,6 +370,15 @@ namespace Pinboard.Entries
 
 					evt.menu.AppendAction("Select Containing Scene", action => SelectAsset(SceneAsset));
 				}
+			}
+
+			if (obj is SceneAsset sceneObj)
+			{
+				evt.menu.AppendAction("Open Scene", action =>
+				{
+					var wasSaved = EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+					EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(sceneObj));
+				});
 			}
 
 			//evt.menu.AppendAction("Edit", action => { this.EditOrUpdate(true); });
@@ -444,6 +463,7 @@ namespace Pinboard.Entries
 
 				return;
 			}
+
 
 			if (IsFolder && !IsSceneObject)
 			{

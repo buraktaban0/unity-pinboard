@@ -132,24 +132,10 @@ namespace Pinboard
 
 		public void OnBeforeSerialize()
 		{
-			if (!isMainDatabase)
-			{
-				return;
-			}
-
-			// EntriesFlat.ForEach(e => Debug.Log("before " + e.ShortVisibleName));
-
-
-			// Debug.Log("before take");
-
-			if (preSerializationSnapshot)
-				DestroyImmediate(preSerializationSnapshot);
-
-			// To prevent instance from being able to take snapshots and thus blocking the application recursively.
-			this.isMainDatabase = false;
-			preSerializationSnapshot = Instantiate(this);
-			this.isMainDatabase = true;
+			
 		}
+		
+		
 
 		public void OnAfterDeserialize()
 		{
@@ -173,6 +159,27 @@ namespace Pinboard
 
 
 			shouldSaveOnEditorUpdate = true;
+		}
+
+		private void TakeSnapshotIfValid()
+		{
+			if (!isMainDatabase)
+			{
+				return;
+			}
+
+			// EntriesFlat.ForEach(e => Debug.Log("before " + e.ShortVisibleName));
+
+
+			// Debug.Log("before take");
+
+			if (preSerializationSnapshot)
+				DestroyImmediate(preSerializationSnapshot);
+
+			// To prevent instance from being able to take snapshots and thus blocking the application recursively.
+			this.isMainDatabase = false;
+			preSerializationSnapshot = Instantiate(this);
+			this.isMainDatabase = true;
 		}
 
 		private void ComparePreSerializationSnapshot()
@@ -215,6 +222,8 @@ namespace Pinboard
 			Undo.RegisterCompleteObjectUndo(this, $"Modify Entry '{entry.ShortVisibleName}'");
 			shouldSaveOnEditorUpdate = true;
 			//EditorApplication.QueuePlayerLoopUpdate();
+			
+			TakeSnapshotIfValid();
 		}
 
 		public void WillModifyBoard(Board board, string reason = null)
@@ -227,6 +236,8 @@ namespace Pinboard
 			Undo.RegisterCompleteObjectUndo(this, reason);
 			shouldSaveOnEditorUpdate = true;
 			//EditorApplication.QueuePlayerLoopUpdate();
+			
+			TakeSnapshotIfValid();
 		}
 
 		public bool HasBoard(string id)
@@ -251,6 +262,8 @@ namespace Pinboard
 			Save();
 
 			onBoardAdded.Invoke(board);
+			
+			TakeSnapshotIfValid();
 		}
 
 		public bool NeedsSave()
@@ -419,6 +432,8 @@ namespace Pinboard
 			board.Remove(entry);
 			DeleteEntry(entry, board);
 			Save();
+			
+			TakeSnapshotIfValid();
 		}
 
 		public void DeleteBoard(string id)
@@ -452,6 +467,8 @@ namespace Pinboard
 
 			onBoardDeleted.Invoke(board);
 			onDatabaseModified.Invoke();
+			
+			TakeSnapshotIfValid();
 		}
 
 		private void DeleteBoardFromAssetDatabase(string id)
