@@ -42,8 +42,6 @@ namespace Pinboard
 		
 		private Action<string> onEditDone;
 
-		private bool wasDone = false;
-
 		private TextField textField;
 
 
@@ -131,7 +129,6 @@ namespace Pinboard
 
 			var button = new Button(() =>
 			{
-				wasDone = true;
 				var val = textField.value.Trim();
 				PinboardCore.RunNextFrame(()=> onEditDone.Invoke(val));
 				this.Close();

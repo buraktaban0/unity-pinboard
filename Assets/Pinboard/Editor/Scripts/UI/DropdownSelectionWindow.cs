@@ -35,7 +35,7 @@ namespace Pinboard.Editor.UI
 		}
 
 
-		private string selection = null;
+		//private string selection = null;
 
 		private void OnEnable()
 		{

@@ -16,7 +16,7 @@ namespace Pinboard.Entries
 
 		private string popupTitle = "Update Note";
 
-		private bool isBeingEdited = false;
+		//private bool isBeingEdited = false;
 
 		public NoteEntry()
 		{
