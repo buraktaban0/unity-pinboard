@@ -528,7 +528,7 @@ namespace Pinboard
 				element.tooltip = tooltip;
 			}
 
-			element.tooltip += $"\nAuthor: {entry.author}";
+			//element.tooltip += $"\nAuthor: {entry.author}";
 
 			var lbl = element.Q<Label>();
 			if (lbl != null)

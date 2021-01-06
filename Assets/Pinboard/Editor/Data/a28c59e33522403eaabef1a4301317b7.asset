@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf943bf5826843ee9bfb988687f5877d, type: 3}
+  m_Name: a28c59e33522403eaabef1a4301317b7
+  m_EditorClassIdentifier: 
+  serializedBoard:
+    id: a28c59e33522403eaabef1a4301317b7
+    accessibility: 3
+    title: Test Board
+    createdBy: Burak Taban
+    createdAt: 1609944865
+    entryIds:
+    - c4175fd8f0f44096840bcae2cd348255
+    - 926015ad29fa468bb81cd953689ade13

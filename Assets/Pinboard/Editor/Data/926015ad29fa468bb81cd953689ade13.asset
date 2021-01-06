@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b597ae6855947b18f3cc558a0c7557c, type: 3}
+  m_Name: 926015ad29fa468bb81cd953689ade13
+  m_EditorClassIdentifier: 
+  type: Pinboard.Entries.SceneViewRecordEntry
+  data: '{"id":"926015ad29fa468bb81cd953689ade13","hasExplicitName":true,"explicitName":"My
+    scene view","author":"Burak Taban","comment":"","createdAt":1609944868,"pivot":{"x":-2.537825584411621,"y":3.196725845336914,"z":-17.150808334350587},"size":9.399999618530274,"rotation":{"x":0.0051672509871423248,"y":0.9896140098571777,"z":0.0368250347673893,"w":-0.13927483558654786},"orthographic":false,"in2DMode":false}'
